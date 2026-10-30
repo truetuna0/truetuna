@@ -6,13 +6,11 @@
   <title>TUNA 통합 웹 키맵퍼 - 10K / 15K / 20K</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root {
-      color-scheme: dark;
-    }
+    :root { color-scheme: dark; }
     body {
       background-color: #202225;
       color: #dcddde;
-      font-family: 'Pretendard', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      font-family: 'Pretendard', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       user-select: none;
     }
     select, option {
@@ -23,48 +21,20 @@
       background-color: #5865f2 !important;
       color: #ffffff !important;
     }
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #202225;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #4f545c;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #5865f2;
-    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #202225; }
+    ::-webkit-scrollbar-thumb { background: #4f545c; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #5865f2; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-sm antialiased">
-
-  <!-- 환경 자동 진단 배너 (오류 감지 시 자동 노출) -->
-  <div id="securityWarningBanner" class="hidden bg-rose-700 text-white px-4 py-3 text-xs font-bold shadow-xl flex flex-col md:flex-row items-center justify-between gap-2 border-b border-rose-900">
-    <div class="flex items-center gap-2">
-      <span class="text-base">⚠️</span>
-      <span id="securityWarningText">브라우저 보안 제약이 감지되었습니다.</span>
-    </div>
-    <div class="flex items-center gap-2">
-      <button id="btnFixAction" onclick="fixSecurityIssue()" class="bg-white text-rose-800 px-3 py-1 rounded text-xs font-extrabold hover:bg-gray-100 shadow transition">
-        해결하기
-      </button>
-      <button onclick="dismissWarning()" class="bg-rose-900 text-white px-2 py-1 rounded hover:bg-rose-950 text-xs">
-        닫기
-      </button>
-    </div>
-  </div>
 
   <!-- 상단 네비게이션 헤더 -->
   <header class="bg-[#2f3136] border-b border-[#202225] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-orange-500 p-0.5 flex items-center justify-center shadow">
-        <div class="w-full h-full bg-[#202225] rounded-[7px] flex items-center justify-center">
-          <svg class="w-6 h-6 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+        <div class="w-full h-full bg-[#202225] rounded-[7px] flex items-center justify-center font-bold text-cyan-400 text-xs">
+          TUNA
         </div>
       </div>
       <div>
@@ -76,7 +46,7 @@
       </div>
     </div>
 
-    <!-- 기종 선택 드롭다운 -->
+    <!-- 타깃 기종 선택 드롭다운 -->
     <div class="flex items-center bg-[#202225] border border-cyan-500/40 rounded px-2.5 py-1 gap-2 shadow-inner">
       <span class="text-xs font-bold text-cyan-400">타깃 기종:</span>
       <select id="selDevice" onchange="onDeviceChanged()" class="bg-[#2f3136] text-white text-xs font-semibold rounded px-2 py-1 outline-none border border-gray-600 focus:border-cyan-400 cursor-pointer">
@@ -87,7 +57,7 @@
       </select>
     </div>
 
-    <!-- 시리얼 통신 제어부 -->
+    <!-- 통신 제어부 -->
     <div class="flex items-center gap-2 bg-[#202225] p-1.5 rounded-lg border border-gray-700/60">
       <button id="btnConnect" onclick="directOpenSerialPort()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs px-3.5 py-1.5 rounded font-bold transition flex items-center gap-1.5 shadow">
         <span>🔌</span>
@@ -150,11 +120,11 @@
           <span>키패드 물리 배치도</span>
           <span class="text-xs font-normal text-cyan-400">(스위치 방향 및 배선 자동 보정됨)</span>
         </h2>
-        <span class="text-xs text-gray-400">버튼을 클릭하면 우측에서 매크로를 편집합니다.</span>
+        <span class="text-xs text-gray-400">스위치 키를 클릭하여 매크로를 편집합니다.</span>
       </div>
 
       <div id="switchBoardContainer" class="flex-1 flex items-center justify-center p-2 overflow-auto">
-        <!-- 동적 렌더링 영역 -->
+        <!-- 동적 렌더링 -->
       </div>
     </div>
 
@@ -267,7 +237,7 @@
   </main>
 
   <script>
-    // --- 1. 장치별 하드웨어 규격 정의 ---
+    // --- 1. 하드웨어 설정 ---
     const DEVICE_CONFIGS = {
       tuna_pad_10k_oled: {
         title: "tuna_pad_10k_oled (10키 OLED)",
@@ -363,7 +333,6 @@
       "NUMPAD": ["KP 0", "KP 1", "KP 2", "KP 3", "KP 4", "KP 5", "KP 6", "KP 7", "KP 8", "KP 9", "KP +", "KP -", "KP *", "KP /", "KP Enter", "KP .", "NumLock"]
     };
 
-    // --- 3. 기본 프로필 데이터 생성 ---
     let currentDevKey = "tuna_20k_oled";
     let currentMode = 1;
     let selectedKeyId = "1";
@@ -451,17 +420,17 @@
       km[5] = { type:"N", label:"PG DOWN", macro:mk_single("PageDown"), hold_label:"", hold_macro:[] };
       km[7] = { type:"N", label:"HOME", macro:mk_single("Home"), hold_label:"", hold_macro:[] };
       km[8] = { type:"N", label:"END", macro:mk_single("End"), hold_label:"", hold_macro:[] };
-      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터", hold_macro:mk_single("Enter") };
+      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터", hold_macro:createSingleKey("Enter") };
       km[11] = { type:"N", label:"빨강강조", macro:PRESETS["빨강강조 (Alt+H FC Tab Tab Enter Esc)"].seq, hold_label:"", hold_macro:[] };
       km[10] = { type:"N", label:"노랑강조", macro:PRESETS["노랑강조 (Alt+H T C Enter Esc)"].seq, hold_label:"", hold_macro:[] };
-      km[13] = { type:"N", label:"서식복사", macro:mk_single("c"), hold_label:"", hold_macro:[] };
-      km[12] = { type:"N", label:"서식붙이기", macro:mk_single("v"), hold_label:"", hold_macro:[] };
-      km[14] = { type:"N", label:"글머리기호", macro:mk_single("-"), hold_label:"", hold_macro:[] };
-      km[16] = { type:"N", label:"F2", macro:mk_single("F2"), hold_label:"", hold_macro:[] };
-      km[15] = { type:"N", label:"F1", macro:mk_single("F1"), hold_label:"", hold_macro:[] };
-      km[17] = { type:"N", label:"F4", macro:mk_single("F4"), hold_label:"", hold_macro:[] };
-      km[18] = { type:"N", label:"F3", macro:mk_single("F3"), hold_label:"", hold_macro:[] };
-      km[19] = { type:"N", label:"F5", macro:mk_single("F5"), hold_label:"", hold_macro:[] };
+      km[13] = { type:"N", label:"서식복사", macro:createSingleKey("c"), hold_label:"", hold_macro:[] };
+      km[12] = { type:"N", label:"서식붙이기", macro:createSingleKey("v"), hold_label:"", hold_macro:[] };
+      km[14] = { type:"N", label:"글머리기호", macro:createSingleKey("-"), hold_label:"", hold_macro:[] };
+      km[16] = { type:"N", label:"F2", macro:createSingleKey("F2"), hold_label:"", hold_macro:[] };
+      km[15] = { type:"N", label:"F1", macro:createSingleKey("F1"), hold_label:"", hold_macro:[] };
+      km[17] = { type:"N", label:"F4", macro:createSingleKey("F4"), hold_label:"", hold_macro:[] };
+      km[18] = { type:"N", label:"F3", macro:createSingleKey("F3"), hold_label:"", hold_macro:[] };
+      km[19] = { type:"N", label:"F5", macro:createSingleKey("F5"), hold_label:"", hold_macro:[] };
       const modes = { 1: km };
       for(let m=2; m<=4; m++) {
         modes[m] = {};
@@ -484,55 +453,7 @@
       return data;
     }
 
-    // --- 4. 보안 환경 자동 진단 (HTTPS & iframe 탈출) ---
-    let securityIssueType = null;
-
-    function checkEnvironment() {
-      const banner = document.getElementById("securityWarningBanner");
-      const warningText = document.getElementById("securityWarningText");
-      const btnAction = document.getElementById("btnFixAction");
-
-      // 1. iframe 안에 갇혀있는 경우
-      if (window.self !== window.top) {
-        securityIssueType = "IFRAME";
-        warningText.textContent = "현재 페이지가 구글 사이트 도구의 iframe 내부에 포함되어 있어 시리얼 포트 팝업이 차단됩니다.";
-        btnAction.textContent = "새 탭에서 독립 실행하기";
-        banner.classList.remove("hidden");
-        return;
-      }
-
-      // 2. HTTPS가 아닌 HTTP로 접속된 경우
-      if (!window.isSecureContext || location.protocol === "http:") {
-        securityIssueType = "HTTP";
-        warningText.textContent = "현재 http:// (비보안) 연결로 접속되어 브라우저가 포트 팝업을 차단했습니다. https:// 연결이 필요합니다.";
-        btnAction.textContent = "https:// 로 다시 열기";
-        banner.classList.remove("hidden");
-        return;
-      }
-
-      // 3. 브라우저 자체가 Web Serial을 지원하지 않는 경우
-      if (!("serial" in navigator)) {
-        securityIssueType = "NOT_SUPPORTED";
-        warningText.textContent = "현재 브라우저는 Web Serial API를 지원하지 않습니다. PC용 Chrome 또는 Edge를 사용해 주세요.";
-        btnAction.classList.add("hidden");
-        banner.classList.remove("hidden");
-        return;
-      }
-    }
-
-    function fixSecurityIssue() {
-      if (securityIssueType === "IFRAME") {
-        window.open(window.location.href, "_blank");
-      } else if (securityIssueType === "HTTP") {
-        window.location.href = window.location.href.replace("http://", "https://");
-      }
-    }
-
-    function dismissWarning() {
-      document.getElementById("securityWarningBanner").classList.add("hidden");
-    }
-
-    // --- 5. 초고속 다이렉트 시리얼 포트 오픈 엔진 ---
+    // --- 3. 시리얼 통신 엔진 (Web Serial) ---
     let serialPort = null;
     let serialReader = null;
     let readLoopActive = false;
@@ -553,32 +474,28 @@
       }
     }
 
-    // 클릭하자마자 단 하나의 비동기 대기 없이 100% 동기적으로 requestPort 호출
+    // 포트 팝업 즉각 호출
     async function directOpenSerialPort() {
-      // 이미 열려 있다면 연결 해제
       if (serialPort && serialPort.readable) {
         await resetSerialLock();
         return;
       }
 
-      // 보안 환경 검사
-      if (!window.isSecureContext) {
-        alert("보안 오류: Web Serial은 오직 https:// 환경에서만 동작합니다.\n주소창의 http:// 를 https:// 로 변경해 주세요.");
-        return;
-      }
-      if (window.self !== window.top) {
-        alert("구글 사이트 내부 프레임(iframe) 안에서는 팝업이 차단됩니다.\n새 탭에서 열어주세요.");
-        window.open(window.location.href, "_blank");
-        return;
-      }
       if (!("serial" in navigator)) {
-        alert("크롬(Chrome) 또는 엣지(Edge) 브라우저를 사용해 주세요.");
+        alert("현재 접속 환경에서는 브라우저가 시리얼 API를 지원하지 않습니다.\nPC용 Chrome 또는 Edge 브라우저에서 실행해 주세요.");
         return;
       }
 
       try {
-        // [핵심] 그 어떤 사전 작업도 없이 곧바로 브라우저 권한 팝업을 띄움
-        const port = await navigator.serial.requestPort();
+        let port = null;
+        try {
+          port = await navigator.serial.requestPort({ filters: [] });
+        } catch (e) {
+          port = await navigator.serial.requestPort();
+        }
+
+        if (!port) return;
+
         await port.open({ baudRate: 115200 });
         serialPort = port;
 
@@ -588,19 +505,18 @@
 
         startReadLoop();
 
-        // 연결 즉시 보드 식별 PING 자동 전송
         setTimeout(() => {
           sendSerialText("PING_TUNA\n");
-        }, 100);
+        }, 150);
 
       } catch (err) {
         if (err.name === "NotFoundError") {
-          setStatus("포트 선택이 취소되었습니다 (팝업에서 장치 클릭 필요)", "warn");
+          setStatus("포트 선택이 취소되었습니다 (목록 장치 클릭 필요)", "warn");
         } else if (err.name === "NetworkError" || err.message.includes("Failed to open")) {
           setStatus("포트 점유 오류 (다른 프로그램 점유 중)", "err");
           alert("포트 열기 실패!\n\n원인: 아두이노 IDE 시리얼 모니터나 파이썬 키맵퍼가 포트를 점유하고 있습니다.\n해결: 실행 중인 다른 시리얼 프로그램을 닫고 다시 시도해 주세요.");
         } else {
-          setStatus("오류: " + err.message, "err");
+          setStatus("포트 에러: " + err.message, "err");
         }
       }
     }
@@ -665,7 +581,6 @@
     function handleIncomingLine(line) {
       if (!line) return;
 
-      // PING 식별 응답 자동 처리
       for (const [devKey, devConf] of Object.entries(DEVICE_CONFIGS)) {
         if (devConf.ack_keys.some(ack => line.includes(ack))) {
           if (currentDevKey !== devKey) {
@@ -673,7 +588,7 @@
             document.getElementById("selDevice").value = devKey;
             renderDeviceLayout();
             switchMode(currentMode);
-            setStatus(`기종 자동 감지 성공: ${devConf.title}`, "ok");
+            setStatus(`기종 자동 감지: ${devConf.title}`, "ok");
           }
           return;
         }
@@ -698,7 +613,7 @@
       }
     }
 
-    // --- 6. UI 빌더 및 인터랙션 ---
+    // --- 4. UI 렌더링 및 편집 인터랙션 ---
     function onDeviceChanged() {
       currentDevKey = document.getElementById("selDevice").value;
       renderDeviceLayout();
@@ -951,7 +866,7 @@
       refreshEditorView();
     }
 
-    // --- 7. 키보드 입력 레코더 ---
+    // --- 5. 레코더 및 이벤트 캡처 ---
     function startMacroRecord() {
       if (isCurrentKeyLocked()) return;
       isRecording = true;
@@ -1026,4 +941,261 @@
     function deleteSelectedEvent() {
       const list = document.getElementById("macroEventList");
       const idx = list.selectedIndex;
-      if (idx >= 0 && idx < currentEditing
+      if (idx >= 0 && idx < currentEditingEvents.length) {
+        currentEditingEvents.splice(idx, 1);
+        renderEventList();
+        if (currentEditingEvents.length > 0) {
+          list.selectedIndex = Math.min(idx, currentEditingEvents.length - 1);
+        }
+      }
+    }
+
+    function insertManualDelay() {
+      const ms = prompt("추가할 지연 시간(ms)을 입력하세요:\n(예: 100ms)", "100");
+      if (ms && !isNaN(ms)) {
+        const list = document.getElementById("macroEventList");
+        const idx = list.selectedIndex >= 0 ? list.selectedIndex + 1 : currentEditingEvents.length;
+        currentEditingEvents.splice(idx, 0, { t: "d", ms: parseInt(ms, 10) });
+        renderEventList();
+        list.selectedIndex = idx;
+      }
+    }
+
+    function moveEventUp() {
+      const list = document.getElementById("macroEventList");
+      const idx = list.selectedIndex;
+      if (idx > 0) {
+        const temp = currentEditingEvents[idx];
+        currentEditingEvents[idx] = currentEditingEvents[idx - 1];
+        currentEditingEvents[idx - 1] = temp;
+        renderEventList();
+        list.selectedIndex = idx - 1;
+      }
+    }
+
+    function moveEventDown() {
+      const list = document.getElementById("macroEventList");
+      const idx = list.selectedIndex;
+      if (idx >= 0 && idx < currentEditingEvents.length - 1) {
+        const temp = currentEditingEvents[idx];
+        currentEditingEvents[idx] = currentEditingEvents[idx + 1];
+        currentEditingEvents[idx + 1] = temp;
+        renderEventList();
+        list.selectedIndex = idx + 1;
+      }
+    }
+
+    function removeAllDelays() {
+      currentEditingEvents = currentEditingEvents.filter(ev => ev.t !== "d");
+      renderEventList();
+    }
+
+    function clearCurrentSequence() {
+      currentEditingEvents = [];
+      renderEventList();
+    }
+
+    function onCategoryChanged() {
+      const cat = document.getElementById("selCategory").value;
+      const itemSel = document.getElementById("selKeyItem");
+      itemSel.innerHTML = "";
+      (CATALOG[cat] || []).forEach(it => {
+        const opt = document.createElement("option");
+        opt.value = it;
+        opt.textContent = it;
+        itemSel.appendChild(opt);
+      });
+    }
+
+    function addCatalogKeyToSequence() {
+      if (isCurrentKeyLocked()) return;
+      const it = document.getElementById("selKeyItem").value;
+      if (!it) return;
+
+      if (PRESETS[it]) {
+        currentEditingEvents.push(...JSON.parse(JSON.stringify(PRESETS[it].seq)));
+        const txtLabel = document.getElementById("txtMacroLabel");
+        if (!txtLabel.value.trim()) txtLabel.value = PRESETS[it].label;
+      } else {
+        currentEditingEvents.push({ t: "p", k: it }, { t: "r", k: it });
+        const txtLabel = document.getElementById("txtMacroLabel");
+        if (!txtLabel.value.trim()) txtLabel.value = it;
+      }
+      renderEventList();
+    }
+
+    function applyMacroToKey() {
+      if (isCurrentKeyLocked()) return;
+      const prof = profiles[currentDevKey];
+      const keyData = prof.modes[currentMode][selectedKeyId];
+      const selTypeVal = document.getElementById("selKeyType").value;
+      const labelVal = document.getElementById("txtMacroLabel").value.trim() || "매크로";
+
+      keyData.type = selTypeVal;
+
+      if (selTypeVal === "H" && subTarget === "hold") {
+        keyData.hold_label = labelVal.substring(0, 12);
+        keyData.hold_macro = JSON.parse(JSON.stringify(currentEditingEvents));
+      } else {
+        keyData.label = labelVal.substring(0, 12);
+        keyData.macro = JSON.parse(JSON.stringify(currentEditingEvents));
+      }
+
+      const btn = document.getElementById(`keyBtn_${selectedKeyId}`);
+      if (btn) updateKeyButtonContent(btn);
+
+      document.getElementById("btnApplyKey").textContent = "적용 완료!";
+      document.getElementById("btnApplyKey").className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-6 py-2 rounded font-bold transition shadow";
+      setTimeout(() => {
+        document.getElementById("btnApplyKey").textContent = "현재 키에 적용";
+        document.getElementById("btnApplyKey").className = "bg-[#4f545c] hover:bg-gray-600 text-white text-xs px-6 py-2 rounded font-bold transition shadow";
+      }, 1000);
+    }
+
+    // --- 6. NVS 통신 프로토콜 (쓰기 / 읽기) ---
+    async function writeToBoard() {
+      if (!serialPort || !serialPort.writable) {
+        alert("먼저 상단의 [직렬 포트 연결]을 완료해 주세요.");
+        return;
+      }
+
+      const cfg = DEVICE_CONFIGS[currentDevKey];
+      const prof = profiles[currentDevKey];
+
+      setStatus("보드에 전송 중...", "warn");
+      document.getElementById("btnWriteBoard").textContent = "전송 중...";
+
+      try {
+        await sendSerialText("CMD_CLEAR\n");
+        await new Promise(r => setTimeout(r, 40));
+
+        function buildSeqStr(events) {
+          return (events || []).map(ev => {
+            if (ev.t === "d") return `D_${ev.ms}`;
+            if (ev.t === "p") return `P_${ev.k}`;
+            if (ev.t === "r") return `R_${ev.k}`;
+            return "";
+          }).filter(Boolean).join(";");
+        }
+
+        if (cfg.protocol === "full") {
+          for (let m = 1; m <= 4; m++) {
+            const mName = prof.mode_names[m] || `작업${m}`;
+            await sendSerialText(`CMD_SET_NAME:${m}:${mName}\n`);
+            await new Promise(r => setTimeout(r, 10));
+
+            for (const [kid, val] of Object.entries(prof.modes[m] || {})) {
+              const ktype = val.type || "N";
+              const label = (val.label || "미설정").replace(/[:;]/g, "");
+              const mstr = buildSeqStr(val.macro);
+              const hlabel = (val.hold_label || "").replace(/[:;]/g, "");
+              const hmstr = buildSeqStr(val.hold_macro);
+
+              await sendSerialText(`CMD_SET:${m},${kid}:${ktype}:${label}:${mstr}:${hlabel}:${hmstr}\n`);
+              await new Promise(r => setTimeout(r, 8));
+            }
+          }
+        } else if (cfg.protocol === "15k_legacy") {
+          for (let m = 2; m <= 4; m++) {
+            for (const [kid, val] of Object.entries(prof.modes[m] || {})) {
+              if (!val.macro || val.macro.length === 0) continue;
+              const label = (val.label || "매크로").replace(/[:;]/g, "");
+              const mstr = buildSeqStr(val.macro);
+
+              await sendSerialText(`CMD_SET:${m},${kid}:${label}:${mstr}\n`);
+              await new Promise(r => setTimeout(r, 12));
+            }
+          }
+        }
+
+        await sendSerialText("CMD_SAVE_DONE\n");
+
+      } catch (err) {
+        setStatus("저장 실패: " + err.message, "err");
+        document.getElementById("btnWriteBoard").textContent = "보드에 저장";
+      }
+    }
+
+    async function readFromBoard() {
+      const cfg = DEVICE_CONFIGS[currentDevKey];
+      if (!cfg.supports_read_all) {
+        alert(`${cfg.title} 펌웨어는 보안 및 규격상 보드 읽기를 지원하지 않습니다.\n[PC 불러오기]를 사용해 주세요.`);
+        return;
+      }
+      if (!serialPort || !serialPort.writable) {
+        alert("먼저 상단의 [직렬 포트 연결]을 완료해 주세요.");
+        return;
+      }
+
+      setStatus("보드 데이터 수신 중...", "warn");
+      await sendSerialText("CMD_READ_ALL\n");
+    }
+
+    function saveProfileToFile() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profiles[currentDevKey], null, 2));
+      const dlAnchor = document.createElement("a");
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `${currentDevKey}_profile.json`);
+      dlAnchor.click();
+      dlAnchor.remove();
+      setStatus("PC 저장 완료", "ok");
+    }
+
+    function loadProfileFromFile() {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".json";
+      fileInput.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try {
+            const loaded = JSON.parse(ev.target.result);
+            profiles[currentDevKey] = loaded;
+            renderDeviceLayout();
+            switchMode(currentMode);
+            setStatus("프로필 불러오기 성공", "ok");
+          } catch (err) {
+            alert("유효한 JSON 프로필 파일이 아닙니다.");
+          }
+        };
+        reader.readAsText(file);
+      };
+      fileInput.click();
+    }
+
+    // --- 7. 전역 바인딩 및 부팅 초기화 ---
+    window.directOpenSerialPort = directOpenSerialPort;
+    window.resetSerialLock = resetSerialLock;
+    window.sendBootloaderCommand = sendBootloaderCommand;
+    window.onDeviceChanged = onDeviceChanged;
+    window.switchMode = switchMode;
+    window.onModeNameChanged = onModeNameChanged;
+    window.onKeyTypeChanged = onKeyTypeChanged;
+    window.onSubTargetChanged = onSubTargetChanged;
+    window.startMacroRecord = startMacroRecord;
+    window.stopMacroRecord = stopMacroRecord;
+    window.clearCurrentSequence = clearCurrentSequence;
+    window.deleteSelectedEvent = deleteSelectedEvent;
+    window.insertManualDelay = insertManualDelay;
+    window.moveEventUp = moveEventUp;
+    window.moveEventDown = moveEventDown;
+    window.removeAllDelays = removeAllDelays;
+    window.onCategoryChanged = onCategoryChanged;
+    window.addCatalogKeyToSequence = addCatalogKeyToSequence;
+    window.applyMacroToKey = applyMacroToKey;
+    window.writeToBoard = writeToBoard;
+    window.readFromBoard = readFromBoard;
+    window.saveProfileToFile = saveProfileToFile;
+    window.loadProfileFromFile = loadProfileFromFile;
+
+    window.onload = () => {
+      initDefaultProfiles();
+      renderDeviceLayout();
+      onCategoryChanged();
+      switchMode(1);
+    };
+  </script>
+</body>
+</html>
