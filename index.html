@@ -180,9 +180,7 @@
 
         <!-- 매크로 이벤트 리스트 -->
         <div class="flex flex-col gap-1">
-          <select id="macroEventList" size="7" class="w-full bg-[#202225] text-gray-200 text-xs rounded p-1.5 border border-gray-700 outline-none font-mono">
-            <!-- 시퀀스 아이템 삽입 영역 -->
-          </select>
+          <select id="macroEventList" size="7" class="w-full bg-[#202225] text-gray-200 text-xs rounded p-1.5 border border-gray-700 outline-none font-mono"></select>
           <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
             <div class="flex items-center gap-1">
               <button onclick="deleteSelectedEvent()" class="hover:text-red-400 bg-[#202225] px-2 py-0.5 rounded border border-gray-700">선택 삭제 (Del)</button>
@@ -211,9 +209,7 @@
             </div>
             <div>
               <span class="text-[10px] text-gray-400 block mb-0.5">단축키 목록:</span>
-              <select id="selKeyItem" class="w-full bg-[#2f3136] text-white text-xs rounded p-1 border border-gray-600 outline-none">
-                <!-- 동적 채움 -->
-              </select>
+              <select id="selKeyItem" class="w-full bg-[#2f3136] text-white text-xs rounded p-1 border border-gray-600 outline-none"></select>
             </div>
           </div>
           <button onclick="addCatalogKeyToSequence()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs py-1.5 rounded font-bold transition text-center shadow">
@@ -237,7 +233,11 @@
   </main>
 
   <script>
-    // --- 1. 하드웨어 설정 ---
+    // 전역 헬퍼 함수 정의
+    function mk_single(k) { return [{t:"p", k:k}, {t:"r", k:k}]; }
+    function createSingleKey(k) { return mk_single(k); }
+
+    // 하드웨어 규격 맵
     const DEVICE_CONFIGS = {
       tuna_pad_10k_oled: {
         title: "tuna_pad_10k_oled (10키 OLED)",
@@ -298,7 +298,6 @@
       }
     };
 
-    // --- 2. 프리셋 라이브러리 및 카탈로그 ---
     const PRESETS = {
       "자간좁게 (Shift+Alt+N)": { label: "자간좁게", seq: [{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"n"},{t:"r",k:"n"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
       "자간넓게 (Shift+Alt+W)": { label: "자간넓게", seq: [{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"w"},{t:"r",k:"w"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
@@ -342,8 +341,6 @@
     let currentEditingEvents = [];
     let profiles = {};
 
-    function mk_single(k) { return [{t:"p", k:k}, {t:"r", k:k}]; }
-
     function initDefaultProfiles() {
       profiles = {
         tuna_pad_10k_oled: createDefault10k(),
@@ -381,25 +378,25 @@
     function createDefault15k() {
       const km = {};
       for(let i=0; i<15; i++) km[i] = { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
-      km[2] = { type:"N", label:"위", macro:mk_single("Up") };
-      km[3] = { type:"N", label:"아래", macro:mk_single("Down") };
-      km[1] = { type:"R", label:"왼쪽", macro:mk_single("Left") };
-      km[0] = { type:"R", label:"오른쪽", macro:mk_single("Right") };
-      km[4] = { type:"H", label:"스페이스", macro:mk_single("Space"), hold_label:"뒤로가기" };
-      km[8] = { type:"N", label:"HOME", macro:mk_single("Home") };
-      km[7] = { type:"N", label:"END", macro:mk_single("End") };
-      km[5] = { type:"N", label:"PG DOWN", macro:mk_single("PageDown") };
-      km[6] = { type:"N", label:"PG UP", macro:mk_single("PageUp") };
-      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터" };
-      km[13] = { type:"N", label:"서식복사", macro:mk_single("c") };
-      km[12] = { type:"N", label:"서식붙이기", macro:mk_single("v") };
-      km[10] = { type:"N", label:"노랑강조", macro:mk_single("h") };
-      km[11] = { type:"N", label:"빨강강조", macro:mk_single("e") };
-      km[14] = { type:"N", label:"글머리기호", macro:mk_single("-") };
+      km[2] = { type:"N", label:"위", macro:mk_single("Up"), hold_label:"", hold_macro:[] };
+      km[3] = { type:"N", label:"아래", macro:mk_single("Down"), hold_label:"", hold_macro:[] };
+      km[1] = { type:"R", label:"왼쪽", macro:mk_single("Left"), hold_label:"", hold_macro:[] };
+      km[0] = { type:"R", label:"오른쪽", macro:mk_single("Right"), hold_label:"", hold_macro:[] };
+      km[4] = { type:"H", label:"스페이스", macro:mk_single("Space"), hold_label:"뒤로가기", hold_macro:[] };
+      km[8] = { type:"N", label:"HOME", macro:mk_single("Home"), hold_label:"", hold_macro:[] };
+      km[7] = { type:"N", label:"END", macro:mk_single("End"), hold_label:"", hold_macro:[] };
+      km[5] = { type:"N", label:"PG DOWN", macro:mk_single("PageDown"), hold_label:"", hold_macro:[] };
+      km[6] = { type:"N", label:"PG UP", macro:mk_single("PageUp"), hold_label:"", hold_macro:[] };
+      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터", hold_macro:[] };
+      km[13] = { type:"N", label:"서식복사", macro:mk_single("c"), hold_label:"", hold_macro:[] };
+      km[12] = { type:"N", label:"서식붙이기", macro:mk_single("v"), hold_label:"", hold_macro:[] };
+      km[10] = { type:"N", label:"노랑강조", macro:mk_single("h"), hold_label:"", hold_macro:[] };
+      km[11] = { type:"N", label:"빨강강조", macro:mk_single("e"), hold_label:"", hold_macro:[] };
+      km[14] = { type:"N", label:"글머리기호", macro:mk_single("-"), hold_label:"", hold_macro:[] };
       const modes = { 1: km };
       for(let m=2; m<=4; m++) {
         modes[m] = {};
-        for(let i=0; i<15; i++) modes[m][i] = { type:"N", label:"미설정", macro:[] };
+        for(let i=0; i<15; i++) modes[m][i] = { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
       }
       return {
         mode_names: { 1:"모드1 (고정)", 2:"모드2 - 편집", 3:"모드3 - 사무", 4:"모드4 - 매크로" },
@@ -420,17 +417,17 @@
       km[5] = { type:"N", label:"PG DOWN", macro:mk_single("PageDown"), hold_label:"", hold_macro:[] };
       km[7] = { type:"N", label:"HOME", macro:mk_single("Home"), hold_label:"", hold_macro:[] };
       km[8] = { type:"N", label:"END", macro:mk_single("End"), hold_label:"", hold_macro:[] };
-      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터", hold_macro:createSingleKey("Enter") };
+      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터", hold_macro:mk_single("Enter") };
       km[11] = { type:"N", label:"빨강강조", macro:PRESETS["빨강강조 (Alt+H FC Tab Tab Enter Esc)"].seq, hold_label:"", hold_macro:[] };
       km[10] = { type:"N", label:"노랑강조", macro:PRESETS["노랑강조 (Alt+H T C Enter Esc)"].seq, hold_label:"", hold_macro:[] };
-      km[13] = { type:"N", label:"서식복사", macro:createSingleKey("c"), hold_label:"", hold_macro:[] };
-      km[12] = { type:"N", label:"서식붙이기", macro:createSingleKey("v"), hold_label:"", hold_macro:[] };
-      km[14] = { type:"N", label:"글머리기호", macro:createSingleKey("-"), hold_label:"", hold_macro:[] };
-      km[16] = { type:"N", label:"F2", macro:createSingleKey("F2"), hold_label:"", hold_macro:[] };
-      km[15] = { type:"N", label:"F1", macro:createSingleKey("F1"), hold_label:"", hold_macro:[] };
-      km[17] = { type:"N", label:"F4", macro:createSingleKey("F4"), hold_label:"", hold_macro:[] };
-      km[18] = { type:"N", label:"F3", macro:createSingleKey("F3"), hold_label:"", hold_macro:[] };
-      km[19] = { type:"N", label:"F5", macro:createSingleKey("F5"), hold_label:"", hold_macro:[] };
+      km[13] = { type:"N", label:"서식복사", macro:mk_single("c"), hold_label:"", hold_macro:[] };
+      km[12] = { type:"N", label:"서식붙이기", macro:mk_single("v"), hold_label:"", hold_macro:[] };
+      km[14] = { type:"N", label:"글머리기호", macro:mk_single("-"), hold_label:"", hold_macro:[] };
+      km[16] = { type:"N", label:"F2", macro:mk_single("F2"), hold_label:"", hold_macro:[] };
+      km[15] = { type:"N", label:"F1", macro:mk_single("F1"), hold_label:"", hold_macro:[] };
+      km[17] = { type:"N", label:"F4", macro:mk_single("F4"), hold_label:"", hold_macro:[] };
+      km[18] = { type:"N", label:"F3", macro:mk_single("F3"), hold_label:"", hold_macro:[] };
+      km[19] = { type:"N", label:"F5", macro:mk_single("F5"), hold_label:"", hold_macro:[] };
       const modes = { 1: km };
       for(let m=2; m<=4; m++) {
         modes[m] = {};
@@ -453,10 +450,28 @@
       return data;
     }
 
-    // --- 3. 시리얼 통신 엔진 (Web Serial) ---
+    // 시퀀스 문자열(P_a;R_a;D_100) 파서
+    function parseSeqString(s) {
+      if (!s) return [];
+      const evs = [];
+      s.split(";").forEach(token => {
+        token = token.trim();
+        if (token.startsWith("P_")) evs.push({ t: "p", k: token.substring(2) });
+        else if (token.startsWith("R_")) evs.push({ t: "r", k: token.substring(2) });
+        else if (token.startsWith("D_")) {
+          const ms = parseInt(token.substring(2), 10);
+          if (!isNaN(ms)) evs.push({ t: "d", ms: ms });
+        }
+      });
+      return evs;
+    }
+
+    // 시리얼 통신 엔진
     let serialPort = null;
     let serialReader = null;
     let readLoopActive = false;
+    let isReadingBoard = false;
+    let readTimeoutTimer = null;
 
     function setStatus(text, type = "normal") {
       const led = document.getElementById("statusLed");
@@ -474,7 +489,6 @@
       }
     }
 
-    // 포트 팝업 즉각 호출
     async function directOpenSerialPort() {
       if (serialPort && serialPort.readable) {
         await resetSerialLock();
@@ -581,6 +595,7 @@
     function handleIncomingLine(line) {
       if (!line) return;
 
+      // PING 식별 응답 자동 감지
       for (const [devKey, devConf] of Object.entries(DEVICE_CONFIGS)) {
         if (devConf.ack_keys.some(ack => line.includes(ack))) {
           if (currentDevKey !== devKey) {
@@ -594,10 +609,51 @@
         }
       }
 
-      if (line.includes("ACK:SAVE_OK")) {
+      // 보드 NVS 데이터 스트림 파싱 엔진
+      if (line.startsWith("NAME:")) {
+        const parts = line.split(":");
+        if (parts.length >= 3) {
+          const mNum = parseInt(parts[1], 10);
+          const mName = parts.slice(2).join(":");
+          if (profiles[currentDevKey]?.mode_names) {
+            profiles[currentDevKey].mode_names[mNum] = mName;
+          }
+        }
+      } else if (line.startsWith("KEY:")) {
+        const parts = line.split(":");
+        if (parts.length >= 7) {
+          const sub = parts[1].split(",");
+          const mNum = parseInt(sub[0], 10);
+          const kid = sub[1];
+          const ktype = parts[2];
+          const labelStr = parts[3];
+          const macroStr = parts[4];
+          const holdLabelStr = parts[5];
+          const holdMacroStr = parts[6];
+
+          if (profiles[currentDevKey]?.modes?.[mNum]) {
+            profiles[currentDevKey].modes[mNum][kid] = {
+              type: ktype,
+              label: labelStr,
+              macro: parseSeqString(macroStr),
+              hold_label: holdLabelStr,
+              hold_macro: parseSeqString(holdMacroStr)
+            };
+          }
+        }
+      } else if (line === "READ_DONE") {
+        isReadingBoard = false;
+        if (readTimeoutTimer) clearTimeout(readTimeoutTimer);
+        setStatus("보드 설정 동기화 완료!", "ok");
+        const btn = document.getElementById("btnReadBoard");
+        btn.textContent = "보드에서 읽음";
+        btn.className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-semibold transition";
+        switchMode(currentMode);
+      } else if (line.includes("ACK:SAVE_OK")) {
         setStatus("보드 NVS 영구 저장 완료!", "ok");
-        document.getElementById("btnWriteBoard").textContent = "보드에 저장완료";
-        document.getElementById("btnWriteBoard").className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-1.5 rounded font-bold transition shadow-lg";
+        const btn = document.getElementById("btnWriteBoard");
+        btn.textContent = "보드에 저장완료";
+        btn.className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-1.5 rounded font-bold transition shadow-lg";
       }
     }
 
@@ -613,7 +669,7 @@
       }
     }
 
-    // --- 4. UI 렌더링 및 편집 인터랙션 ---
+    // UI 엔진
     function onDeviceChanged() {
       currentDevKey = document.getElementById("selDevice").value;
       renderDeviceLayout();
@@ -645,7 +701,7 @@
 
         if (cfg.supports_sw_lock) {
           const lockBtn = document.createElement("button");
-          const isLocked = profiles[currentDevKey].sw_locks[currentMode]?.[sw.num] || false;
+          const isLocked = profiles[currentDevKey]?.sw_locks?.[currentMode]?.[sw.num] || false;
           lockBtn.id = `btnLock_sw${sw.num}`;
           lockBtn.className = isLocked ? "text-[11px] px-2 py-0.5 rounded bg-rose-600 text-white font-bold" : "text-[11px] px-2 py-0.5 rounded bg-gray-700 text-gray-300 hover:text-white";
           lockBtn.textContent = isLocked ? "🔒 잠김" : "🔓 해제";
@@ -693,7 +749,7 @@
     function updateKeyButtonContent(btn) {
       const kid = btn.dataset.keyId;
       const dir = btn.dataset.dir;
-      const keyData = profiles[currentDevKey].modes[currentMode]?.[kid] || { type: "N", label: "미설정" };
+      const keyData = profiles[currentDevKey]?.modes?.[currentMode]?.[kid] || { type: "N", label: "미설정" };
 
       let label = keyData.label || "미설정";
       if (keyData.type === "R") label += " (연속)";
@@ -718,7 +774,7 @@
       document.getElementById("lblSelectedTarget").textContent = `선택된 키: [ M${currentMode} / ${dir} (ID ${selectedKeyId}) ]`;
 
       const cfg = DEVICE_CONFIGS[currentDevKey];
-      const keyData = profiles[currentDevKey].modes[currentMode]?.[selectedKeyId] || { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
+      const keyData = profiles[currentDevKey]?.modes?.[currentMode]?.[selectedKeyId] || { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
 
       const selType = document.getElementById("selKeyType");
       if (!cfg.supports_hold) {
@@ -743,7 +799,7 @@
     }
 
     function refreshEditorView() {
-      const keyData = profiles[currentDevKey].modes[currentMode]?.[selectedKeyId] || { type:"N", label:"", macro:[], hold_label:"", hold_macro:[] };
+      const keyData = profiles[currentDevKey]?.modes?.[currentMode]?.[selectedKeyId] || { type:"N", label:"", macro:[], hold_label:"", hold_macro:[] };
       const selTypeVal = document.getElementById("selKeyType").value;
 
       if (selTypeVal === "H" && subTarget === "hold") {
@@ -806,7 +862,7 @@
       if (!cfg.supports_sw_lock) return false;
       const sw = cfg.switches.find(s => [s.up, s.down, s.left, s.right, s.push].includes(Number(selectedKeyId)));
       if (!sw) return false;
-      return profiles[currentDevKey].sw_locks[currentMode]?.[sw.num] || false;
+      return profiles[currentDevKey]?.sw_locks?.[currentMode]?.[sw.num] || false;
     }
 
     function toggleSwLock(swNum) {
@@ -834,7 +890,7 @@
       });
 
       const prof = profiles[currentDevKey];
-      document.getElementById("txtModeName").value = prof.mode_names[m] || `모드 ${m}`;
+      document.getElementById("txtModeName").value = prof?.mode_names?.[m] || `모드 ${m}`;
 
       document.querySelectorAll("[id^='keyBtn_']").forEach(b => updateKeyButtonContent(b));
       selectKeyForEdit(selectedKeyId);
@@ -842,7 +898,7 @@
 
     function onModeNameChanged() {
       const name = document.getElementById("txtModeName").value.trim();
-      if (name) {
+      if (name && profiles[currentDevKey]?.mode_names) {
         profiles[currentDevKey].mode_names[currentMode] = name;
       }
     }
@@ -866,7 +922,7 @@
       refreshEditorView();
     }
 
-    // --- 5. 레코더 및 이벤트 캡처 ---
+    // 키보드 레코더
     function startMacroRecord() {
       if (isCurrentKeyLocked()) return;
       isRecording = true;
@@ -1052,7 +1108,7 @@
       }, 1000);
     }
 
-    // --- 6. NVS 통신 프로토콜 (쓰기 / 읽기) ---
+    // 보드 NVS 입출력 제어
     async function writeToBoard() {
       if (!serialPort || !serialPort.writable) {
         alert("먼저 상단의 [직렬 포트 연결]을 완료해 주세요.");
@@ -1119,7 +1175,7 @@
     async function readFromBoard() {
       const cfg = DEVICE_CONFIGS[currentDevKey];
       if (!cfg.supports_read_all) {
-        alert(`${cfg.title} 펌웨어는 보안 및 규격상 보드 읽기를 지원하지 않습니다.\n[PC 불러오기]를 사용해 주세요.`);
+        alert(cfg.title + " 모델은 펌웨어 규격상 보드 읽기를 지원하지 않습니다.\nPC 불러오기(JSON)를 이용해 주세요.");
         return;
       }
       if (!serialPort || !serialPort.writable) {
@@ -1127,8 +1183,24 @@
         return;
       }
 
-      setStatus("보드 데이터 수신 중...", "warn");
+      isReadingBoard = true;
+      setStatus("보드 데이터 수신 및 동기화 중...", "warn");
+      const btn = document.getElementById("btnReadBoard");
+      btn.textContent = "읽는 중...";
+      btn.className = "bg-amber-600 text-white text-xs px-3 py-1.5 rounded font-semibold transition animate-pulse";
+
       await sendSerialText("CMD_READ_ALL\n");
+
+      if (readTimeoutTimer) clearTimeout(readTimeoutTimer);
+      readTimeoutTimer = setTimeout(() => {
+        if (isReadingBoard) {
+          isReadingBoard = false;
+          setStatus("보드 데이터 수신 완료 (타임아웃 마감)", "ok");
+          btn.textContent = "보드에서 읽음";
+          btn.className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-semibold transition";
+          switchMode(currentMode);
+        }
+      }, 2500);
     }
 
     function saveProfileToFile() {
@@ -1165,7 +1237,9 @@
       fileInput.click();
     }
 
-    // --- 7. 전역 바인딩 및 부팅 초기화 ---
+    // 전역 바인딩
+    window.mk_single = mk_single;
+    window.createSingleKey = createSingleKey;
     window.directOpenSerialPort = directOpenSerialPort;
     window.resetSerialLock = resetSerialLock;
     window.sendBootloaderCommand = sendBootloaderCommand;
