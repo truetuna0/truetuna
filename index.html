@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark" style="color-scheme: dark;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TUNA 통합 웹 키맵퍼 - 10K / 15K / 20K</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      background-color: #202225;
+      color: #dcddde;
+      font-family: 'Pretendard', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      user-select: none;
+    }
+    select, option {
+      background-color: #2f3136 !important;
+      color: #ffffff !important;
+    }
+    option:checked, option:hover {
+      background-color: #5865f2 !important;
+      color: #ffffff !important;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #202225;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #4f545c;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #5865f2;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col text-sm antialiased">
+
+  <!-- 환경 자동 진단 배너 (오류 감지 시 자동 노출) -->
+  <div id="securityWarningBanner" class="hidden bg-rose-700 text-white px-4 py-3 text-xs font-bold shadow-xl flex flex-col md:flex-row items-center justify-between gap-2 border-b border-rose-900">
+    <div class="flex items-center gap-2">
+      <span class="text-base">⚠️</span>
+      <span id="securityWarningText">브라우저 보안 제약이 감지되었습니다.</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="btnFixAction" onclick="fixSecurityIssue()" class="bg-white text-rose-800 px-3 py-1 rounded text-xs font-extrabold hover:bg-gray-100 shadow transition">
+        해결하기
+      </button>
+      <button onclick="dismissWarning()" class="bg-rose-900 text-white px-2 py-1 rounded hover:bg-rose-950 text-xs">
+        닫기
+      </button>
+    </div>
+  </div>
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="bg-[#2f3136] border-b border-[#202225] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-orange-500 p-0.5 flex items-center justify-center shadow">
+        <div class="w-full h-full bg-[#202225] rounded-[7px] flex items-center justify-center">
+          <svg class="w-6 h-6 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+      </div>
+      <div>
+        <h1 class="text-base font-extrabold text-white tracking-wide flex items-center gap-2">
+          <span>TUNA 통합 키맵퍼</span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-700/50">WEB SERIAL</span>
+        </h1>
+        <p class="text-[11px] text-gray-400">ESP32-S3 10K / 15K / 20K ORANGE / 20K OLED 전 기종 통합</p>
+      </div>
+    </div>
+
+    <!-- 기종 선택 드롭다운 -->
+    <div class="flex items-center bg-[#202225] border border-cyan-500/40 rounded px-2.5 py-1 gap-2 shadow-inner">
+      <span class="text-xs font-bold text-cyan-400">타깃 기종:</span>
+      <select id="selDevice" onchange="onDeviceChanged()" class="bg-[#2f3136] text-white text-xs font-semibold rounded px-2 py-1 outline-none border border-gray-600 focus:border-cyan-400 cursor-pointer">
+        <option value="tuna_20k_oled">tuna_20k_oled (20키 OLED 표준)</option>
+        <option value="tuna_20k_orange">tuna_20k_orange (20키 오렌지 규격)</option>
+        <option value="tuna_pad_15k">tuna_pad_15k (15키 3스위치)</option>
+        <option value="tuna_pad_10k_oled">tuna_pad_10k_oled (10키 OLED)</option>
+      </select>
+    </div>
+
+    <!-- 시리얼 통신 제어부 -->
+    <div class="flex items-center gap-2 bg-[#202225] p-1.5 rounded-lg border border-gray-700/60">
+      <button id="btnConnect" onclick="directOpenSerialPort()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs px-3.5 py-1.5 rounded font-bold transition flex items-center gap-1.5 shadow">
+        <span>🔌</span>
+        <span>직렬 포트 연결 (팝업)</span>
+      </button>
+
+      <button onclick="resetSerialLock()" title="포트 점유 락 강제 해제" class="bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs px-2.5 py-1.5 rounded transition">
+        🔄 포트 리셋
+      </button>
+
+      <button onclick="sendBootloaderCommand()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-2.5 py-1.5 rounded font-semibold transition" title="ESP32 펌웨어 업로드용 다운로드 모드 진입">
+        ⚡ 부트로더
+      </button>
+
+      <div class="flex items-center gap-1.5 px-2">
+        <span id="statusLed" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+        <span id="statusText" class="text-xs text-red-400 font-medium">연결 안 됨</span>
+      </div>
+    </div>
+
+    <!-- NVS 및 프로필 저장부 -->
+    <div class="flex items-center gap-2">
+      <button onclick="loadProfileFromFile()" class="bg-[#4f545c] hover:bg-gray-600 text-white text-xs px-2.5 py-1.5 rounded transition">
+        PC 불러오기
+      </button>
+      <button onclick="saveProfileToFile()" class="bg-[#4f545c] hover:bg-gray-600 text-white text-xs px-2.5 py-1.5 rounded transition">
+        PC 저장
+      </button>
+      <button id="btnReadBoard" onclick="readFromBoard()" class="bg-[#4f545c] hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded font-semibold transition">
+        보드 읽기
+      </button>
+      <button id="btnWriteBoard" onclick="writeToBoard()" class="bg-[#ed4245] hover:bg-red-600 text-white text-xs px-3.5 py-1.5 rounded font-bold transition shadow-lg">
+        보드에 저장
+      </button>
+    </div>
+  </header>
+
+  <!-- 모드 선택 탭 바 -->
+  <div class="bg-[#202225] border-b border-gray-800 px-6 py-2.5 flex items-center justify-between">
+    <div class="flex items-center gap-2" id="modeButtonsContainer">
+      <button onclick="switchMode(1)" id="btnMode1" class="mode-btn px-6 py-1 rounded text-xs font-bold bg-[#5865f2] text-white shadow">M1</button>
+      <button onclick="switchMode(2)" id="btnMode2" class="mode-btn px-6 py-1 rounded text-xs font-bold bg-[#2f3136] text-gray-400 hover:text-white">M2</button>
+      <button onclick="switchMode(3)" id="btnMode3" class="mode-btn px-6 py-1 rounded text-xs font-bold bg-[#2f3136] text-gray-400 hover:text-white">M3</button>
+      <button onclick="switchMode(4)" id="btnMode4" class="mode-btn px-6 py-1 rounded text-xs font-bold bg-[#2f3136] text-gray-400 hover:text-white">M4</button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400">현재 모드 이름:</span>
+      <input type="text" id="txtModeName" oninput="onModeNameChanged()" class="bg-[#2f3136] border border-gray-700 text-white text-xs rounded px-2.5 py-1 w-44 outline-none focus:border-cyan-400" placeholder="모드 이름">
+    </div>
+  </div>
+
+  <!-- 메인 레이아웃 본문 -->
+  <main class="flex-1 p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-auto">
+
+    <!-- 좌측: 물리 스위치 배치도 (7컬럼) -->
+    <div class="lg:col-span-7 bg-[#2f3136] rounded-xl p-4 border border-gray-800 flex flex-col shadow-sm">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-700/60 mb-3">
+        <h2 id="lblLayoutTitle" class="text-sm font-bold text-white flex items-center gap-2">
+          <span>키패드 물리 배치도</span>
+          <span class="text-xs font-normal text-cyan-400">(스위치 방향 및 배선 자동 보정됨)</span>
+        </h2>
+        <span class="text-xs text-gray-400">버튼을 클릭하면 우측에서 매크로를 편집합니다.</span>
+      </div>
+
+      <div id="switchBoardContainer" class="flex-1 flex items-center justify-center p-2 overflow-auto">
+        <!-- 동적 렌더링 영역 -->
+      </div>
+    </div>
+
+    <!-- 우측: 매크로 상세 에디터 (5컬럼) -->
+    <div class="lg:col-span-5 flex flex-col gap-3">
+
+      <!-- 동작 모드 및 키 속성 카드 -->
+      <div class="bg-[#2f3136] rounded-xl p-4 border border-gray-800 shadow-sm flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-gray-700/60 pb-2">
+          <div id="lblSelectedTarget" class="text-sm font-bold text-cyan-400">선택된 키: [ M1 / ID ? ]</div>
+          <span id="lblLockIndicator" class="hidden text-xs text-red-400 font-bold bg-red-950/60 border border-red-700/50 px-2 py-0.5 rounded">🔒 잠김</span>
+        </div>
+
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs text-gray-300 font-medium">동작 방식:</span>
+          <select id="selKeyType" onchange="onKeyTypeChanged()" class="flex-1 bg-[#202225] border border-gray-700 text-white text-xs rounded px-2.5 py-1.5 outline-none focus:border-cyan-400">
+            <option value="N">일반 실행 (단발 매크로)</option>
+            <option value="R">연속 입력 (누르고 있으면 반복)</option>
+            <option value="H">짧게/길게 누르기 (Tap & Hold)</option>
+          </select>
+        </div>
+
+        <!-- Tap / Hold 전환 라디오 -->
+        <div id="holdTargetRow" class="hidden bg-[#202225] p-2 rounded flex items-center justify-around border border-amber-500/30">
+          <label class="flex items-center gap-1.5 text-xs text-white cursor-pointer">
+            <input type="radio" name="subTarget" value="tap" checked onchange="onSubTargetChanged()" class="accent-cyan-400">
+            <span>1. 짧게 누름 (Tap)</span>
+          </label>
+          <label class="flex items-center gap-1.5 text-xs text-amber-400 cursor-pointer">
+            <input type="radio" name="subTarget" value="hold" onchange="onSubTargetChanged()" class="accent-amber-400">
+            <span>2. 길게 누름 (Hold 0.45s)</span>
+          </label>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span id="lblMacroNameTitle" class="text-xs text-amber-400 font-medium whitespace-nowrap">OLED 표시 이름:</span>
+          <input type="text" id="txtMacroLabel" maxlength="12" class="flex-1 bg-[#202225] border border-gray-700 text-white text-xs rounded px-2.5 py-1.5 outline-none focus:border-cyan-400" placeholder="화면에 출력될 이름">
+        </div>
+      </div>
+
+      <!-- 물리 키보드 시퀀스 레코더 카드 -->
+      <div class="bg-[#2f3136] rounded-xl p-4 border border-gray-800 shadow-sm flex flex-col gap-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-gray-200">키보드 실시간 시퀀스 레코더</span>
+          <div class="flex items-center gap-1.5">
+            <button id="btnRecStart" onclick="startMacroRecord()" class="bg-red-600 hover:bg-red-700 text-white text-xs px-2.5 py-1 rounded font-bold transition">● 기록 시작</button>
+            <button id="btnRecStop" onclick="stopMacroRecord()" disabled class="bg-gray-600 text-gray-400 text-xs px-2.5 py-1 rounded font-semibold transition cursor-not-allowed">■ 기록 완료</button>
+            <button onclick="clearCurrentSequence()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded transition">비우기</button>
+          </div>
+        </div>
+
+        <input type="text" id="recCaptureBox" readonly value="[기록 시작] 클릭 후 실제 키보드를 직접 타이핑하세요" class="bg-[#202225] text-cyan-300 text-xs px-3 py-2 rounded border border-gray-700 outline-none text-center">
+
+        <!-- 매크로 이벤트 리스트 -->
+        <div class="flex flex-col gap-1">
+          <select id="macroEventList" size="7" class="w-full bg-[#202225] text-gray-200 text-xs rounded p-1.5 border border-gray-700 outline-none font-mono">
+            <!-- 시퀀스 아이템 삽입 영역 -->
+          </select>
+          <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
+            <div class="flex items-center gap-1">
+              <button onclick="deleteSelectedEvent()" class="hover:text-red-400 bg-[#202225] px-2 py-0.5 rounded border border-gray-700">선택 삭제 (Del)</button>
+              <button onclick="insertManualDelay()" class="hover:text-cyan-400 bg-[#202225] px-2 py-0.5 rounded border border-gray-700">+ 딜레이 삽입</button>
+            </div>
+            <div class="flex items-center gap-1">
+              <button onclick="moveEventUp()" class="hover:text-white bg-[#202225] px-2 py-0.5 rounded border border-gray-700">▲ 위로</button>
+              <button onclick="moveEventDown()" class="hover:text-white bg-[#202225] px-2 py-0.5 rounded border border-gray-700">▼ 아래로</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 단축키 프리셋 카탈로그 -->
+        <div class="bg-[#202225] p-2.5 rounded-lg border border-gray-700/70 flex flex-col gap-2 mt-1">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <span class="text-[10px] text-gray-400 block mb-0.5">카테고리:</span>
+              <select id="selCategory" onchange="onCategoryChanged()" class="w-full bg-[#2f3136] text-white text-xs rounded p-1 border border-gray-600 outline-none">
+                <option value="HWP">HWP (한글 오피스)</option>
+                <option value="PPT">PPT (파워포인트)</option>
+                <option value="SPECIAL">특수작업 / 유튜브 배속</option>
+                <option value="FN">기능키 (F1~F12)</option>
+                <option value="EDIT">편집 및 방향키</option>
+                <option value="NUMPAD">넘패드 (텐키)</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-[10px] text-gray-400 block mb-0.5">단축키 목록:</span>
+              <select id="selKeyItem" class="w-full bg-[#2f3136] text-white text-xs rounded p-1 border border-gray-600 outline-none">
+                <!-- 동적 채움 -->
+              </select>
+            </div>
+          </div>
+          <button onclick="addCatalogKeyToSequence()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs py-1.5 rounded font-bold transition text-center shadow">
+            + 선택한 단축키 매크로 시퀀스에 추가
+          </button>
+        </div>
+
+        <!-- 하단 적용 버튼 -->
+        <div class="flex items-center justify-between pt-2 border-t border-gray-700/50">
+          <button onclick="removeAllDelays()" class="text-xs text-gray-300 hover:text-white bg-[#202225] border border-gray-700 px-3 py-1.5 rounded">
+            딜레이 일괄 제거
+          </button>
+          <button id="btnApplyKey" onclick="applyMacroToKey()" class="bg-[#4f545c] hover:bg-gray-600 text-white text-xs px-6 py-2 rounded font-bold transition shadow">
+            현재 키에 적용
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // --- 1. 장치별 하드웨어 규격 정의 ---
+    const DEVICE_CONFIGS = {
+      tuna_pad_10k_oled: {
+        title: "tuna_pad_10k_oled (10키 OLED)",
+        ack_keys: ["ACK_TUNA_10K_OLED"],
+        supports_hold: true,
+        supports_sw_lock: true,
+        supports_read_all: true,
+        mode_1_locked: false,
+        protocol: "full",
+        switches: [
+          { num: 1, title: "스위치 1 (SW1)", up: 2, down: 3, left: 1, right: 0, push: 4 },
+          { num: 2, title: "스위치 2 (SW2)", up: 7, down: 8, left: 6, right: 5, push: 9 }
+        ]
+      },
+      tuna_pad_15k: {
+        title: "tuna_pad_15k (15키 3스위치)",
+        ack_keys: ["ACK_TUNA_15K"],
+        supports_hold: false,
+        supports_sw_lock: false,
+        supports_read_all: false,
+        mode_1_locked: true,
+        protocol: "15k_legacy",
+        switches: [
+          { num: 1, title: "스위치 1 (SW1 상단)", up: 2, down: 3, left: 1, right: 0, push: 4, colspan: 2 },
+          { num: 2, title: "스위치 2 (SW2 하좌)", up: 8, down: 7, left: 5, right: 6, push: 9 },
+          { num: 3, title: "스위치 3 (SW3 하우)", up: 13, down: 12, left: 10, right: 11, push: 14 }
+        ]
+      },
+      tuna_20k_orange: {
+        title: "tuna_20k_orange (20키 오렌지 규격)",
+        ack_keys: ["ACK_TUNA_20K_ORANGE"],
+        supports_hold: true,
+        supports_sw_lock: true,
+        supports_read_all: true,
+        mode_1_locked: false,
+        protocol: "full",
+        switches: [
+          { num: 1, title: "스위치 1 (SW1)", up: 1, down: 0, left: 3, right: 2, push: 4 },
+          { num: 2, title: "스위치 2 (SW2 - 오렌지 좌7/우8)", up: 6, down: 5, left: 7, right: 8, push: 9 },
+          { num: 3, title: "스위치 3 (SW3)", up: 11, down: 10, left: 13, right: 12, push: 14 },
+          { num: 4, title: "스위치 4 (SW4 - 오렌지 좌17/우18)", up: 16, down: 15, left: 17, right: 18, push: 19 }
+        ]
+      },
+      tuna_20k_oled: {
+        title: "tuna_20k_oled (20키 OLED 표준)",
+        ack_keys: ["ACK_TUNA_20K_OLED", "ACK_TUNA_20K"],
+        supports_hold: true,
+        supports_sw_lock: true,
+        supports_read_all: true,
+        mode_1_locked: false,
+        protocol: "full",
+        switches: [
+          { num: 1, title: "스위치 1 (SW1)", up: 1, down: 0, left: 3, right: 2, push: 4 },
+          { num: 2, title: "스위치 2 (SW2 - 표준 좌8/우7)", up: 6, down: 5, left: 8, right: 7, push: 9 },
+          { num: 3, title: "스위치 3 (SW3)", up: 11, down: 10, left: 13, right: 12, push: 14 },
+          { num: 4, title: "스위치 4 (SW4 - 표준 좌18/우17)", up: 16, down: 15, left: 18, right: 17, push: 19 }
+        ]
+      }
+    };
+
+    // --- 2. 프리셋 라이브러리 및 카탈로그 ---
+    const PRESETS = {
+      "자간좁게 (Shift+Alt+N)": { label: "자간좁게", seq: [{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"n"},{t:"r",k:"n"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
+      "자간넓게 (Shift+Alt+W)": { label: "자간넓게", seq: [{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"w"},{t:"r",k:"w"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
+      "글씨작게 (Ctrl+A Shift+Alt+R)": { label: "글씨작게", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:30},{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"r"},{t:"r",k:"r"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
+      "글씨크게 (Ctrl+A Ctrl+])": { label: "글씨크게", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:30},{t:"p",k:"Ctrl"},{t:"p",k:"]"},{t:"r",k:"]"},{t:"r",k:"Ctrl"}] },
+      "문단간격좁게 (Ctrl+A Shift+Alt+A)": { label: "문단좁게", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:30},{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
+      "문단간격넓게 (Ctrl+A Shift+Alt+Z)": { label: "문단넓게", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:30},{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"z"},{t:"r",k:"z"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
+      "모양복사 (Alt+C Enter)": { label: "모양복사", seq: [{t:"p",k:"Alt"},{t:"p",k:"c"},{t:"r",k:"c"},{t:"r",k:"Alt"},{t:"d",ms:80},{t:"p",k:"Enter"},{t:"r",k:"Enter"}] },
+      "모양붙이기 (Alt+C Esc)": { label: "모양붙이기", seq: [{t:"p",k:"Alt"},{t:"p",k:"c"},{t:"r",k:"c"},{t:"r",k:"Alt"},{t:"d",ms:50},{t:"p",k:"Esc"},{t:"r",k:"Esc"}] },
+      "개요삽입 (Ctrl+Insert)": { label: "개요삽입", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"Insert"},{t:"r",k:"Insert"},{t:"r",k:"Ctrl"}] },
+      "문단번호 삽입 (Ctrl+Shift+Insert)": { label: "문단번호", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"Shift"},{t:"p",k:"Insert"},{t:"r",k:"Insert"},{t:"r",k:"Shift"},{t:"r",k:"Ctrl"}] },
+      "문단번호리셋 (Ctrl+K,N Alt+G Enter)": { label: "번호리셋", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"k"},{t:"r",k:"k"},{t:"d",ms:30},{t:"p",k:"n"},{t:"r",k:"n"},{t:"r",k:"Ctrl"},{t:"d",ms:120},{t:"p",k:"Alt"},{t:"p",k:"g"},{t:"r",k:"g"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"Enter"},{t:"r",k:"Enter"}] },
+      "번호다운 (Ctrl + KP +)": { label: "번호다운", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"KP +"},{t:"r",k:"KP +"},{t:"r",k:"Ctrl"}] },
+      "번호업 (Ctrl + KP -)": { label: "번호업", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"KP -"},{t:"r",k:"KP -"},{t:"r",k:"Ctrl"}] },
+      "노랑강조 (Alt+H T C Enter Esc)": { label: "노랑강조", seq: [{t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},{t:"p",k:"t"},{t:"r",k:"t"},{t:"d",ms:40},{t:"p",k:"c"},{t:"r",k:"c"},{t:"d",ms:40},{t:"p",k:"Enter"},{t:"r",k:"Enter"},{t:"d",ms:30},{t:"p",k:"Esc"},{t:"r",k:"Esc"}] },
+      "빨강강조 (Alt+H FC Tab Tab Enter Esc)": { label: "빨강강조", seq: [{t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},{t:"p",k:"f"},{t:"r",k:"f"},{t:"d",ms:30},{t:"p",k:"c"},{t:"r",k:"c"},{t:"d",ms:40},{t:"p",k:"Tab"},{t:"r",k:"Tab"},{t:"d",ms:30},{t:"p",k:"Tab"},{t:"r",k:"Tab"},{t:"d",ms:30},{t:"p",k:"Enter"},{t:"r",k:"Enter"},{t:"d",ms:30},{t:"p",k:"Esc"},{t:"r",k:"Esc"}] },
+      "문단간격1.5 (Ctrl+A Alt+H K Down Enter)": { label: "문단1.5", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:40},{t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},{t:"p",k:"k"},{t:"r",k:"k"},{t:"d",ms:40},{t:"p",k:"Down"},{t:"r",k:"Down"},{t:"d",ms:30},{t:"p",k:"Enter"},{t:"r",k:"Enter"}] },
+      "유튜브 배속UP (Shift+.)": { label: "배속UP", seq: [{t:"p",k:"Shift"},{t:"p",k:"."},{t:"r",k:"."},{t:"r",k:"Shift"}] },
+      "유튜브 배속DOWN (Shift+,)": { label: "배속DOWN", seq: [{t:"p",k:"Shift"},{t:"p",k:","},{t:"r",k:","},{t:"r",k:"Shift"}] },
+      "저장 (Ctrl+S)": { label: "저장", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"s"},{t:"r",k:"s"},{t:"r",k:"Ctrl"}] },
+      "복사 (Ctrl+C Esc)": { label: "복사", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"c"},{t:"r",k:"c"},{t:"r",k:"Ctrl"},{t:"d",ms:20},{t:"p",k:"Esc"},{t:"r",k:"Esc"}] },
+      "붙이기 (Ctrl+V)": { label: "붙이기", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"v"},{t:"r",k:"v"},{t:"r",k:"Ctrl"}] },
+      "스크린샷 (Win+Shift+S)": { label: "스크린샷", seq: [{t:"p",k:"Win"},{t:"p",k:"Shift"},{t:"p",k:"s"},{t:"r",k:"s"},{t:"r",k:"Shift"},{t:"r",k:"Win"}] }
+    };
+
+    const CATALOG = {
+      "HWP": ["자간좁게 (Shift+Alt+N)", "자간넓게 (Shift+Alt+W)", "글씨작게 (Ctrl+A Shift+Alt+R)", "글씨크게 (Ctrl+A Ctrl+])", "문단간격좁게 (Ctrl+A Shift+Alt+A)", "문단간격넓게 (Ctrl+A Shift+Alt+Z)", "모양복사 (Alt+C Enter)", "모양붙이기 (Alt+C Esc)", "개요삽입 (Ctrl+Insert)", "문단번호 삽입 (Ctrl+Shift+Insert)", "문단번호리셋 (Ctrl+K,N Alt+G Enter)", "번호다운 (Ctrl + KP +)", "번호업 (Ctrl + KP -)", "저장 (Ctrl+S)", "복사 (Ctrl+C Esc)", "붙이기 (Ctrl+V)"],
+      "PPT": ["노랑강조 (Alt+H T C Enter Esc)", "빨강강조 (Alt+H FC Tab Tab Enter Esc)", "문단간격1.5 (Ctrl+A Alt+H K Down Enter)", "저장 (Ctrl+S)", "복사 (Ctrl+C Esc)", "붙이기 (Ctrl+V)"],
+      "SPECIAL": ["유튜브 배속UP (Shift+.)", "유튜브 배속DOWN (Shift+,)", "스크린샷 (Win+Shift+S)"],
+      "FN": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"],
+      "EDIT": ["Up", "Down", "Left", "Right", "Enter", "Esc", "Space", "Tab", "Backspace", "Insert", "Delete", "Home", "End", "PageUp", "PageDown"],
+      "NUMPAD": ["KP 0", "KP 1", "KP 2", "KP 3", "KP 4", "KP 5", "KP 6", "KP 7", "KP 8", "KP 9", "KP +", "KP -", "KP *", "KP /", "KP Enter", "KP .", "NumLock"]
+    };
+
+    // --- 3. 기본 프로필 데이터 생성 ---
+    let currentDevKey = "tuna_20k_oled";
+    let currentMode = 1;
+    let selectedKeyId = "1";
+    let subTarget = "tap";
+    let isRecording = false;
+    let lastKeyTime = 0;
+    let currentEditingEvents = [];
+    let profiles = {};
+
+    function mk_single(k) { return [{t:"p", k:k}, {t:"r", k:k}]; }
+
+    function initDefaultProfiles() {
+      profiles = {
+        tuna_pad_10k_oled: createDefault10k(),
+        tuna_pad_15k: createDefault15k(),
+        tuna_20k_orange: createDefault20kOrange(),
+        tuna_20k_oled: createDefault20kOled()
+      };
+    }
+
+    function createDefault10k() {
+      const km = {};
+      for(let i=0; i<10; i++) km[i] = { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
+      km[0] = { type:"R", label:"오른쪽", macro:mk_single("Right"), hold_label:"", hold_macro:[] };
+      km[1] = { type:"R", label:"왼쪽", macro:mk_single("Left"), hold_label:"", hold_macro:[] };
+      km[2] = { type:"N", label:"위", macro:mk_single("Up"), hold_label:"", hold_macro:[] };
+      km[3] = { type:"N", label:"아래", macro:mk_single("Down"), hold_label:"", hold_macro:[] };
+      km[4] = { type:"H", label:"스페이스", macro:mk_single("Space"), hold_label:"뒤로가기", hold_macro:[{t:"p",k:"Alt"},{t:"p",k:"Left"},{t:"r",k:"Left"},{t:"r",k:"Alt"}] };
+      km[5] = { type:"N", label:"END", macro:mk_single("End"), hold_label:"", hold_macro:[] };
+      km[6] = { type:"N", label:"HOME", macro:mk_single("Home"), hold_label:"", hold_macro:[] };
+      km[7] = { type:"N", label:"PG UP", macro:mk_single("PageUp"), hold_label:"", hold_macro:[] };
+      km[8] = { type:"N", label:"PG DOWN", macro:mk_single("PageDown"), hold_label:"", hold_macro:[] };
+      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터", hold_macro:mk_single("Enter") };
+      const modes = { 1: km };
+      for(let m=2; m<=4; m++) {
+        modes[m] = {};
+        for(let i=0; i<10; i++) modes[m][i] = { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
+      }
+      return {
+        mode_names: { 1:"기본기능", 2:"편집/코딩", 3:"특수기능", 4:"PPT" },
+        sw_locks: { 1:{1:false, 2:false}, 2:{1:false, 2:false}, 3:{1:false, 2:false}, 4:{1:false, 2:false} },
+        modes: modes
+      };
+    }
+
+    function createDefault15k() {
+      const km = {};
+      for(let i=0; i<15; i++) km[i] = { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
+      km[2] = { type:"N", label:"위", macro:mk_single("Up") };
+      km[3] = { type:"N", label:"아래", macro:mk_single("Down") };
+      km[1] = { type:"R", label:"왼쪽", macro:mk_single("Left") };
+      km[0] = { type:"R", label:"오른쪽", macro:mk_single("Right") };
+      km[4] = { type:"H", label:"스페이스", macro:mk_single("Space"), hold_label:"뒤로가기" };
+      km[8] = { type:"N", label:"HOME", macro:mk_single("Home") };
+      km[7] = { type:"N", label:"END", macro:mk_single("End") };
+      km[5] = { type:"N", label:"PG DOWN", macro:mk_single("PageDown") };
+      km[6] = { type:"N", label:"PG UP", macro:mk_single("PageUp") };
+      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터" };
+      km[13] = { type:"N", label:"서식복사", macro:mk_single("c") };
+      km[12] = { type:"N", label:"서식붙이기", macro:mk_single("v") };
+      km[10] = { type:"N", label:"노랑강조", macro:mk_single("h") };
+      km[11] = { type:"N", label:"빨강강조", macro:mk_single("e") };
+      km[14] = { type:"N", label:"글머리기호", macro:mk_single("-") };
+      const modes = { 1: km };
+      for(let m=2; m<=4; m++) {
+        modes[m] = {};
+        for(let i=0; i<15; i++) modes[m][i] = { type:"N", label:"미설정", macro:[] };
+      }
+      return {
+        mode_names: { 1:"모드1 (고정)", 2:"모드2 - 편집", 3:"모드3 - 사무", 4:"모드4 - 매크로" },
+        sw_locks: { 1:{1:false,2:false,3:false}, 2:{1:false,2:false,3:false}, 3:{1:false,2:false,3:false}, 4:{1:false,2:false,3:false} },
+        modes: modes
+      };
+    }
+
+    function createDefault20kOrange() {
+      const km = {};
+      for(let i=0; i<20; i++) km[i] = { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
+      km[1] = { type:"N", label:"위", macro:mk_single("Up"), hold_label:"", hold_macro:[] };
+      km[0] = { type:"N", label:"아래", macro:mk_single("Down"), hold_label:"", hold_macro:[] };
+      km[3] = { type:"R", label:"왼쪽", macro:mk_single("Left"), hold_label:"", hold_macro:[] };
+      km[2] = { type:"R", label:"오른쪽", macro:mk_single("Right"), hold_label:"", hold_macro:[] };
+      km[4] = { type:"H", label:"스페이스", macro:mk_single("Space"), hold_label:"뒤로가기", hold_macro:[{t:"p",k:"Alt"},{t:"p",k:"Left"},{t:"r",k:"Left"},{t:"r",k:"Alt"}] };
+      km[6] = { type:"N", label:"PG UP", macro:mk_single("PageUp"), hold_label:"", hold_macro:[] };
+      km[5] = { type:"N", label:"PG DOWN", macro:mk_single("PageDown"), hold_label:"", hold_macro:[] };
+      km[7] = { type:"N", label:"HOME", macro:mk_single("Home"), hold_label:"", hold_macro:[] };
+      km[8] = { type:"N", label:"END", macro:mk_single("End"), hold_label:"", hold_macro:[] };
+      km[9] = { type:"H", label:"ESC", macro:mk_single("Esc"), hold_label:"엔터", hold_macro:mk_single("Enter") };
+      km[11] = { type:"N", label:"빨강강조", macro:PRESETS["빨강강조 (Alt+H FC Tab Tab Enter Esc)"].seq, hold_label:"", hold_macro:[] };
+      km[10] = { type:"N", label:"노랑강조", macro:PRESETS["노랑강조 (Alt+H T C Enter Esc)"].seq, hold_label:"", hold_macro:[] };
+      km[13] = { type:"N", label:"서식복사", macro:mk_single("c"), hold_label:"", hold_macro:[] };
+      km[12] = { type:"N", label:"서식붙이기", macro:mk_single("v"), hold_label:"", hold_macro:[] };
+      km[14] = { type:"N", label:"글머리기호", macro:mk_single("-"), hold_label:"", hold_macro:[] };
+      km[16] = { type:"N", label:"F2", macro:mk_single("F2"), hold_label:"", hold_macro:[] };
+      km[15] = { type:"N", label:"F1", macro:mk_single("F1"), hold_label:"", hold_macro:[] };
+      km[17] = { type:"N", label:"F4", macro:mk_single("F4"), hold_label:"", hold_macro:[] };
+      km[18] = { type:"N", label:"F3", macro:mk_single("F3"), hold_label:"", hold_macro:[] };
+      km[19] = { type:"N", label:"F5", macro:mk_single("F5"), hold_label:"", hold_macro:[] };
+      const modes = { 1: km };
+      for(let m=2; m<=4; m++) {
+        modes[m] = {};
+        for(let i=0; i<20; i++) modes[m][i] = { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
+      }
+      return {
+        mode_names: { 1:"기본기능", 2:"편집/코딩", 3:"특수기능", 4:"PPT" },
+        sw_locks: { 1:{1:false,2:false,3:false,4:false}, 2:{1:false,2:false,3:false,4:false}, 3:{1:false,2:false,3:false,4:false}, 4:{1:false,2:false,3:false,4:false} },
+        modes: modes
+      };
+    }
+
+    function createDefault20kOled() {
+      const data = createDefault20kOrange();
+      const m1 = data.modes[1];
+      m1[8] = { type:"N", label:"HOME", macro:mk_single("Home"), hold_label:"", hold_macro:[] };
+      m1[7] = { type:"N", label:"END", macro:mk_single("End"), hold_label:"", hold_macro:[] };
+      m1[18] = { type:"N", label:"F4", macro:mk_single("F4"), hold_label:"", hold_macro:[] };
+      m1[17] = { type:"N", label:"F3", macro:mk_single("F3"), hold_label:"", hold_macro:[] };
+      return data;
+    }
+
+    // --- 4. 보안 환경 자동 진단 (HTTPS & iframe 탈출) ---
+    let securityIssueType = null;
+
+    function checkEnvironment() {
+      const banner = document.getElementById("securityWarningBanner");
+      const warningText = document.getElementById("securityWarningText");
+      const btnAction = document.getElementById("btnFixAction");
+
+      // 1. iframe 안에 갇혀있는 경우
+      if (window.self !== window.top) {
+        securityIssueType = "IFRAME";
+        warningText.textContent = "현재 페이지가 구글 사이트 도구의 iframe 내부에 포함되어 있어 시리얼 포트 팝업이 차단됩니다.";
+        btnAction.textContent = "새 탭에서 독립 실행하기";
+        banner.classList.remove("hidden");
+        return;
+      }
+
+      // 2. HTTPS가 아닌 HTTP로 접속된 경우
+      if (!window.isSecureContext || location.protocol === "http:") {
+        securityIssueType = "HTTP";
+        warningText.textContent = "현재 http:// (비보안) 연결로 접속되어 브라우저가 포트 팝업을 차단했습니다. https:// 연결이 필요합니다.";
+        btnAction.textContent = "https:// 로 다시 열기";
+        banner.classList.remove("hidden");
+        return;
+      }
+
+      // 3. 브라우저 자체가 Web Serial을 지원하지 않는 경우
+      if (!("serial" in navigator)) {
+        securityIssueType = "NOT_SUPPORTED";
+        warningText.textContent = "현재 브라우저는 Web Serial API를 지원하지 않습니다. PC용 Chrome 또는 Edge를 사용해 주세요.";
+        btnAction.classList.add("hidden");
+        banner.classList.remove("hidden");
+        return;
+      }
+    }
+
+    function fixSecurityIssue() {
+      if (securityIssueType === "IFRAME") {
+        window.open(window.location.href, "_blank");
+      } else if (securityIssueType === "HTTP") {
+        window.location.href = window.location.href.replace("http://", "https://");
+      }
+    }
+
+    function dismissWarning() {
+      document.getElementById("securityWarningBanner").classList.add("hidden");
+    }
+
+    // --- 5. 초고속 다이렉트 시리얼 포트 오픈 엔진 ---
+    let serialPort = null;
+    let serialReader = null;
+    let readLoopActive = false;
+
+    function setStatus(text, type = "normal") {
+      const led = document.getElementById("statusLed");
+      const lbl = document.getElementById("statusText");
+      lbl.textContent = text;
+      if (type === "ok") {
+        led.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]";
+        lbl.className = "text-xs text-emerald-400 font-bold";
+      } else if (type === "warn") {
+        led.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+        lbl.className = "text-xs text-amber-400 font-bold";
+      } else {
+        led.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+        lbl.className = "text-xs text-rose-400 font-medium";
+      }
+    }
+
+    // 클릭하자마자 단 하나의 비동기 대기 없이 100% 동기적으로 requestPort 호출
+    async function directOpenSerialPort() {
+      // 이미 열려 있다면 연결 해제
+      if (serialPort && serialPort.readable) {
+        await resetSerialLock();
+        return;
+      }
+
+      // 보안 환경 검사
+      if (!window.isSecureContext) {
+        alert("보안 오류: Web Serial은 오직 https:// 환경에서만 동작합니다.\n주소창의 http:// 를 https:// 로 변경해 주세요.");
+        return;
+      }
+      if (window.self !== window.top) {
+        alert("구글 사이트 내부 프레임(iframe) 안에서는 팝업이 차단됩니다.\n새 탭에서 열어주세요.");
+        window.open(window.location.href, "_blank");
+        return;
+      }
+      if (!("serial" in navigator)) {
+        alert("크롬(Chrome) 또는 엣지(Edge) 브라우저를 사용해 주세요.");
+        return;
+      }
+
+      try {
+        // [핵심] 그 어떤 사전 작업도 없이 곧바로 브라우저 권한 팝업을 띄움
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+        serialPort = port;
+
+        document.getElementById("btnConnect").innerHTML = "<span>❌</span><span>연결 해제</span>";
+        document.getElementById("btnConnect").className = "bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-1.5 rounded font-bold transition shadow";
+        setStatus("직결 연결 성공 (115200)", "ok");
+
+        startReadLoop();
+
+        // 연결 즉시 보드 식별 PING 자동 전송
+        setTimeout(() => {
+          sendSerialText("PING_TUNA\n");
+        }, 100);
+
+      } catch (err) {
+        if (err.name === "NotFoundError") {
+          setStatus("포트 선택이 취소되었습니다 (팝업에서 장치 클릭 필요)", "warn");
+        } else if (err.name === "NetworkError" || err.message.includes("Failed to open")) {
+          setStatus("포트 점유 오류 (다른 프로그램 점유 중)", "err");
+          alert("포트 열기 실패!\n\n원인: 아두이노 IDE 시리얼 모니터나 파이썬 키맵퍼가 포트를 점유하고 있습니다.\n해결: 실행 중인 다른 시리얼 프로그램을 닫고 다시 시도해 주세요.");
+        } else {
+          setStatus("오류: " + err.message, "err");
+        }
+      }
+    }
+
+    async function resetSerialLock() {
+      try {
+        readLoopActive = false;
+        if (serialReader) {
+          try { await serialReader.cancel(); } catch(e) {}
+          try { serialReader.releaseLock(); } catch(e) {}
+          serialReader = null;
+        }
+        if (serialPort) {
+          try { await serialPort.close(); } catch(e) {}
+          serialPort = null;
+        }
+        setStatus("포트 잠금 해제됨", "ok");
+        document.getElementById("btnConnect").innerHTML = "<span>🔌</span><span>직렬 포트 연결 (팝업)</span>";
+        document.getElementById("btnConnect").className = "bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs px-3.5 py-1.5 rounded font-bold transition flex items-center gap-1.5 shadow";
+      } catch (err) {
+        setStatus("리셋 실패: " + err.message, "err");
+      }
+    }
+
+    async function sendSerialText(text) {
+      if (!serialPort || !serialPort.writable) return;
+      const encoder = new TextEncoder();
+      const writer = serialPort.writable.getWriter();
+      await writer.write(encoder.encode(text));
+      writer.releaseLock();
+    }
+
+    async function startReadLoop() {
+      if (!serialPort || !serialPort.readable) return;
+      readLoopActive = true;
+      const textDecoder = new TextDecoderStream();
+      const readableStreamClosed = serialPort.readable.pipeTo(textDecoder.writable);
+      const reader = textDecoder.readable.getReader();
+      serialReader = reader;
+
+      let buffer = "";
+      try {
+        while (readLoopActive) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (value) {
+            buffer += value;
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              handleIncomingLine(line.trim());
+            }
+          }
+        }
+      } catch (err) {
+      } finally {
+        reader.releaseLock();
+      }
+    }
+
+    function handleIncomingLine(line) {
+      if (!line) return;
+
+      // PING 식별 응답 자동 처리
+      for (const [devKey, devConf] of Object.entries(DEVICE_CONFIGS)) {
+        if (devConf.ack_keys.some(ack => line.includes(ack))) {
+          if (currentDevKey !== devKey) {
+            currentDevKey = devKey;
+            document.getElementById("selDevice").value = devKey;
+            renderDeviceLayout();
+            switchMode(currentMode);
+            setStatus(`기종 자동 감지 성공: ${devConf.title}`, "ok");
+          }
+          return;
+        }
+      }
+
+      if (line.includes("ACK:SAVE_OK")) {
+        setStatus("보드 NVS 영구 저장 완료!", "ok");
+        document.getElementById("btnWriteBoard").textContent = "보드에 저장완료";
+        document.getElementById("btnWriteBoard").className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-1.5 rounded font-bold transition shadow-lg";
+      }
+    }
+
+    async function sendBootloaderCommand() {
+      if (!serialPort || !serialPort.writable) {
+        alert("먼저 포트를 연결해 주세요.");
+        return;
+      }
+      if (confirm("ESP32-S3를 다운로드 모드(부트로더)로 진입시키겠습니까?")) {
+        await sendSerialText("CMD_BOOTLOADER\n");
+        setStatus("다운로드 모드 진입 성공", "ok");
+        await resetSerialLock();
+      }
+    }
+
+    // --- 6. UI 빌더 및 인터랙션 ---
+    function onDeviceChanged() {
+      currentDevKey = document.getElementById("selDevice").value;
+      renderDeviceLayout();
+      switchMode(1);
+      setStatus(`기종 변경: ${DEVICE_CONFIGS[currentDevKey].title}`, "ok");
+    }
+
+    function renderDeviceLayout() {
+      const cfg = DEVICE_CONFIGS[currentDevKey];
+      const container = document.getElementById("switchBoardContainer");
+      container.innerHTML = "";
+
+      document.getElementById("lblLayoutTitle").innerHTML = `<span>${cfg.title}</span>`;
+
+      const grid = document.createElement("div");
+      grid.className = "grid gap-6 p-4 items-center justify-center";
+      grid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+
+      cfg.switches.forEach(sw => {
+        const swBox = document.createElement("div");
+        swBox.className = "bg-[#36393f] p-3 rounded-xl border border-gray-700/80 shadow flex flex-col gap-2";
+        if (sw.colspan === 2) {
+          swBox.classList.add("col-span-2", "w-72", "mx-auto");
+        }
+
+        const swHeader = document.createElement("div");
+        swHeader.className = "flex items-center justify-between border-b border-gray-700/50 pb-1.5";
+        swHeader.innerHTML = `<span class="text-xs font-bold text-cyan-400">${sw.title}</span>`;
+
+        if (cfg.supports_sw_lock) {
+          const lockBtn = document.createElement("button");
+          const isLocked = profiles[currentDevKey].sw_locks[currentMode]?.[sw.num] || false;
+          lockBtn.id = `btnLock_sw${sw.num}`;
+          lockBtn.className = isLocked ? "text-[11px] px-2 py-0.5 rounded bg-rose-600 text-white font-bold" : "text-[11px] px-2 py-0.5 rounded bg-gray-700 text-gray-300 hover:text-white";
+          lockBtn.textContent = isLocked ? "🔒 잠김" : "🔓 해제";
+          lockBtn.onclick = () => toggleSwLock(sw.num);
+          swHeader.appendChild(lockBtn);
+        }
+        swBox.appendChild(swHeader);
+
+        const padGrid = document.createElement("div");
+        padGrid.className = "grid grid-cols-3 gap-1.5 p-1 items-center justify-center";
+
+        padGrid.appendChild(document.createElement("div"));
+        padGrid.appendChild(createKeyButton(sw.up, "UP"));
+        padGrid.appendChild(document.createElement("div"));
+
+        padGrid.appendChild(createKeyButton(sw.left, "LEFT"));
+        padGrid.appendChild(createKeyButton(sw.push, "PUSH", true));
+        padGrid.appendChild(createKeyButton(sw.right, "RIGHT"));
+
+        padGrid.appendChild(document.createElement("div"));
+        padGrid.appendChild(createKeyButton(sw.down, "DOWN"));
+        padGrid.appendChild(document.createElement("div"));
+
+        swBox.appendChild(padGrid);
+        grid.appendChild(swBox);
+      });
+
+      container.appendChild(grid);
+    }
+
+    function createKeyButton(keyId, dir, isPush = false) {
+      const btn = document.createElement("button");
+      btn.id = `keyBtn_${keyId}`;
+      btn.dataset.keyId = keyId;
+      btn.dataset.dir = dir;
+      btn.className = `w-20 h-14 rounded-lg flex flex-col items-center justify-center text-center p-1 border transition ${
+        isPush ? 'bg-[#4f545c] border-gray-600 hover:border-cyan-400' : 'bg-[#40444b] border-gray-700 hover:border-cyan-400'
+      }`;
+
+      btn.onclick = () => selectKeyForEdit(keyId);
+      updateKeyButtonContent(btn);
+      return btn;
+    }
+
+    function updateKeyButtonContent(btn) {
+      const kid = btn.dataset.keyId;
+      const dir = btn.dataset.dir;
+      const keyData = profiles[currentDevKey].modes[currentMode]?.[kid] || { type: "N", label: "미설정" };
+
+      let label = keyData.label || "미설정";
+      if (keyData.type === "R") label += " (연속)";
+      else if (keyData.type === "H") label += `/[H]${(keyData.hold_label || "").substring(0, 3)}`;
+
+      btn.innerHTML = `<span class="text-[10px] text-gray-400 font-mono leading-none">[${dir}]</span><span class="text-xs font-semibold text-white truncate max-w-full mt-0.5">${label}</span>`;
+    }
+
+    function selectKeyForEdit(keyId) {
+      selectedKeyId = String(keyId);
+
+      document.querySelectorAll("[id^='keyBtn_']").forEach(b => {
+        if (b.dataset.keyId === selectedKeyId) {
+          b.classList.add("ring-2", "ring-cyan-400", "bg-cyan-900/40");
+        } else {
+          b.classList.remove("ring-2", "ring-cyan-400", "bg-cyan-900/40");
+        }
+      });
+
+      const btn = document.getElementById(`keyBtn_${selectedKeyId}`);
+      const dir = btn ? btn.dataset.dir : "KEY";
+      document.getElementById("lblSelectedTarget").textContent = `선택된 키: [ M${currentMode} / ${dir} (ID ${selectedKeyId}) ]`;
+
+      const cfg = DEVICE_CONFIGS[currentDevKey];
+      const keyData = profiles[currentDevKey].modes[currentMode]?.[selectedKeyId] || { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
+
+      const selType = document.getElementById("selKeyType");
+      if (!cfg.supports_hold) {
+        selType.innerHTML = `<option value="N">일반 실행 (단발 매크로)</option>`;
+        selType.value = "N";
+        document.getElementById("holdTargetRow").classList.add("hidden");
+      } else {
+        selType.innerHTML = `
+          <option value="N">일반 실행 (단발 매크로)</option>
+          <option value="R">연속 입력 (누르고 있으면 반복)</option>
+          <option value="H">짧게/길게 누르기 (Tap & Hold)</option>
+        `;
+        selType.value = keyData.type || "N";
+        if (keyData.type === "H") {
+          document.getElementById("holdTargetRow").classList.remove("hidden");
+        } else {
+          document.getElementById("holdTargetRow").classList.add("hidden");
+        }
+      }
+
+      refreshEditorView();
+    }
+
+    function refreshEditorView() {
+      const keyData = profiles[currentDevKey].modes[currentMode]?.[selectedKeyId] || { type:"N", label:"", macro:[], hold_label:"", hold_macro:[] };
+      const selTypeVal = document.getElementById("selKeyType").value;
+
+      if (selTypeVal === "H" && subTarget === "hold") {
+        document.getElementById("lblMacroNameTitle").textContent = "길게 누를 때 이름:";
+        document.getElementById("txtMacroLabel").value = keyData.hold_label || "";
+        currentEditingEvents = JSON.parse(JSON.stringify(keyData.hold_macro || []));
+      } else {
+        document.getElementById("lblMacroNameTitle").textContent = "OLED 표시 이름:";
+        document.getElementById("txtMacroLabel").value = keyData.label || "";
+        currentEditingEvents = JSON.parse(JSON.stringify(keyData.macro || []));
+      }
+
+      renderEventList();
+      checkLockState();
+    }
+
+    function renderEventList() {
+      const list = document.getElementById("macroEventList");
+      list.innerHTML = "";
+      currentEditingEvents.forEach((ev, idx) => {
+        const opt = document.createElement("option");
+        opt.value = idx;
+        if (ev.t === "d") {
+          opt.textContent = `  [대기] ${ev.ms} ms`;
+          opt.className = "text-amber-400";
+        } else if (ev.t === "p") {
+          opt.textContent = `▼ 누름: ${ev.k}`;
+          opt.className = "text-emerald-400";
+        } else if (ev.t === "r") {
+          opt.textContent = `▲ 뗌:   ${ev.k}`;
+          opt.className = "text-rose-400";
+        }
+        list.appendChild(opt);
+      });
+    }
+
+    function checkLockState() {
+      const cfg = DEVICE_CONFIGS[currentDevKey];
+      const isMode1Fixed = (cfg.mode_1_locked && currentMode === 1);
+      const isLocked = isCurrentKeyLocked();
+
+      const lockIndicator = document.getElementById("lblLockIndicator");
+      const disabled = isMode1Fixed || isLocked;
+
+      if (isMode1Fixed || isLocked) {
+        lockIndicator.classList.remove("hidden");
+        lockIndicator.textContent = isMode1Fixed ? "M1 고정 (수정 불가)" : "🔒 스위치 잠김";
+      } else {
+        lockIndicator.classList.add("hidden");
+      }
+
+      document.getElementById("selKeyType").disabled = disabled;
+      document.getElementById("txtMacroLabel").disabled = disabled;
+      document.getElementById("btnRecStart").disabled = disabled;
+      document.getElementById("btnApplyKey").disabled = disabled;
+    }
+
+    function isCurrentKeyLocked() {
+      const cfg = DEVICE_CONFIGS[currentDevKey];
+      if (!cfg.supports_sw_lock) return false;
+      const sw = cfg.switches.find(s => [s.up, s.down, s.left, s.right, s.push].includes(Number(selectedKeyId)));
+      if (!sw) return false;
+      return profiles[currentDevKey].sw_locks[currentMode]?.[sw.num] || false;
+    }
+
+    function toggleSwLock(swNum) {
+      const prof = profiles[currentDevKey];
+      if (!prof.sw_locks[currentMode]) prof.sw_locks[currentMode] = {};
+      const cur = prof.sw_locks[currentMode][swNum] || false;
+      prof.sw_locks[currentMode][swNum] = !cur;
+
+      const btn = document.getElementById(`btnLock_sw${swNum}`);
+      if (btn) {
+        btn.textContent = !cur ? "🔒 잠김" : "🔓 해제";
+        btn.className = !cur ? "text-[11px] px-2 py-0.5 rounded bg-rose-600 text-white font-bold" : "text-[11px] px-2 py-0.5 rounded bg-gray-700 text-gray-300 hover:text-white";
+      }
+      checkLockState();
+    }
+
+    function switchMode(m) {
+      currentMode = m;
+      document.querySelectorAll(".mode-btn").forEach((b, idx) => {
+        if (idx + 1 === m) {
+          b.className = "mode-btn px-6 py-1 rounded text-xs font-bold bg-[#5865f2] text-white shadow";
+        } else {
+          b.className = "mode-btn px-6 py-1 rounded text-xs font-bold bg-[#2f3136] text-gray-400 hover:text-white";
+        }
+      });
+
+      const prof = profiles[currentDevKey];
+      document.getElementById("txtModeName").value = prof.mode_names[m] || `모드 ${m}`;
+
+      document.querySelectorAll("[id^='keyBtn_']").forEach(b => updateKeyButtonContent(b));
+      selectKeyForEdit(selectedKeyId);
+    }
+
+    function onModeNameChanged() {
+      const name = document.getElementById("txtModeName").value.trim();
+      if (name) {
+        profiles[currentDevKey].mode_names[currentMode] = name;
+      }
+    }
+
+    function onKeyTypeChanged() {
+      const val = document.getElementById("selKeyType").value;
+      if (val === "H") {
+        document.getElementById("holdTargetRow").classList.remove("hidden");
+      } else {
+        document.getElementById("holdTargetRow").classList.add("hidden");
+        subTarget = "tap";
+      }
+      refreshEditorView();
+    }
+
+    function onSubTargetChanged() {
+      const radios = document.getElementsByName("subTarget");
+      for (const r of radios) {
+        if (r.checked) subTarget = r.value;
+      }
+      refreshEditorView();
+    }
+
+    // --- 7. 키보드 입력 레코더 ---
+    function startMacroRecord() {
+      if (isCurrentKeyLocked()) return;
+      isRecording = true;
+      currentEditingEvents = [];
+      renderEventList();
+      lastKeyTime = Date.now();
+
+      document.getElementById("btnRecStart").disabled = true;
+      document.getElementById("btnRecStop").disabled = false;
+      document.getElementById("btnRecStop").className = "bg-rose-600 hover:bg-rose-700 text-white text-xs px-2.5 py-1 rounded font-bold transition";
+      const captureBox = document.getElementById("recCaptureBox");
+      captureBox.value = "[기록 중...] 키보드를 누르세요";
+      captureBox.className = "bg-red-950/40 text-rose-300 text-xs px-3 py-2 rounded border border-rose-500 outline-none text-center font-bold";
+
+      window.addEventListener("keydown", handleGlobalKeyDown);
+      window.addEventListener("keyup", handleGlobalKeyUp);
+    }
+
+    function stopMacroRecord() {
+      isRecording = false;
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+      window.removeEventListener("keyup", handleGlobalKeyUp);
+
+      document.getElementById("btnRecStart").disabled = false;
+      document.getElementById("btnRecStop").disabled = true;
+      document.getElementById("btnRecStop").className = "bg-gray-600 text-gray-400 text-xs px-2.5 py-1 rounded font-semibold transition cursor-not-allowed";
+      const captureBox = document.getElementById("recCaptureBox");
+      captureBox.value = "기록 완료됨. 매크로 이름 확인 후 [적용]을 누르세요.";
+      captureBox.className = "bg-[#202225] text-cyan-300 text-xs px-3 py-2 rounded border border-gray-700 outline-none text-center";
+    }
+
+    function handleGlobalKeyDown(e) {
+      if (!isRecording) return;
+      e.preventDefault();
+      const now = Date.now();
+      const elapsed = now - lastKeyTime;
+      lastKeyTime = now;
+
+      if (currentEditingEvents.length > 0 && elapsed > 20) {
+        currentEditingEvents.push({ t: "d", ms: elapsed });
+      }
+
+      const keyName = normalizeKey(e.key);
+      currentEditingEvents.push({ t: "p", k: keyName });
+      document.getElementById("recCaptureBox").value = `입력 감지: ${keyName}`;
+      renderEventList();
+    }
+
+    function handleGlobalKeyUp(e) {
+      if (!isRecording) return;
+      e.preventDefault();
+      const now = Date.now();
+      const elapsed = now - lastKeyTime;
+      lastKeyTime = now;
+
+      if (elapsed > 20) {
+        currentEditingEvents.push({ t: "d", ms: elapsed });
+      }
+
+      const keyName = normalizeKey(e.key);
+      currentEditingEvents.push({ t: "r", k: keyName });
+      renderEventList();
+    }
+
+    function normalizeKey(k) {
+      if (k === "Control") return "Ctrl";
+      if (k === "Escape") return "Esc";
+      if (k === " ") return "Space";
+      return k;
+    }
+
+    function deleteSelectedEvent() {
+      const list = document.getElementById("macroEventList");
+      const idx = list.selectedIndex;
+      if (idx >= 0 && idx < currentEditing
