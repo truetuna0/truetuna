@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TUNA 통합 웹 키맵퍼 - 10K / 15K / 20K</title>
+  <title>TUNA 자동 감지 통합 키맵퍼</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root { color-scheme: dark; }
@@ -39,36 +39,25 @@
       </div>
       <div>
         <h1 class="text-base font-extrabold text-white tracking-wide flex items-center gap-2">
-          <span>TUNA 통합 키맵퍼</span>
-          <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-700/50">WEB SERIAL</span>
+          <span>TUNA 통합 키맵퍼 (자동 감지)</span>
+          <span id="badgeDevice" class="text-[10px] px-2 py-0.5 rounded bg-cyan-900/60 text-cyan-300 border border-cyan-700/50">기기 대기 중</span>
         </h1>
-        <p class="text-[11px] text-gray-400">ESP32-S3 10K / 15K / 20K ORANGE / 20K OLED 전 기종 통합</p>
+        <p class="text-[11px] text-gray-400">연결 시 보드 규격(10K/15K/20K) 자동 식별 및 동기화</p>
       </div>
     </div>
 
-    <!-- 타깃 기종 선택 드롭다운 -->
-    <div class="flex items-center bg-[#202225] border border-cyan-500/40 rounded px-2.5 py-1 gap-2 shadow-inner">
-      <span class="text-xs font-bold text-cyan-400">타깃 기종:</span>
-      <select id="selDevice" onchange="onDeviceChanged()" class="bg-[#2f3136] text-white text-xs font-semibold rounded px-2 py-1 outline-none border border-gray-600 focus:border-cyan-400 cursor-pointer">
-        <option value="tuna_20k_oled">tuna_20k_oled (20키 OLED 표준)</option>
-        <option value="tuna_20k_orange">tuna_20k_orange (20키 오렌지 규격)</option>
-        <option value="tuna_pad_15k">tuna_pad_15k (15키 3스위치)</option>
-        <option value="tuna_pad_10k_oled">tuna_pad_10k_oled (10키 OLED)</option>
-      </select>
-    </div>
-
-    <!-- 통신 제어부 -->
+    <!-- 통신 및 자동 인식 제어부 -->
     <div class="flex items-center gap-2 bg-[#202225] p-1.5 rounded-lg border border-gray-700/60">
-      <button id="btnConnect" onclick="directOpenSerialPort()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs px-3.5 py-1.5 rounded font-bold transition flex items-center gap-1.5 shadow">
+      <button id="btnConnect" onclick="directOpenSerialPort()" class="bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs px-4 py-1.5 rounded font-bold transition flex items-center gap-1.5 shadow">
         <span>🔌</span>
-        <span>직렬 포트 연결 (팝업)</span>
+        <span>직렬 포트 연결 및 자동 인식</span>
       </button>
 
       <button onclick="resetSerialLock()" title="포트 점유 락 강제 해제" class="bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs px-2.5 py-1.5 rounded transition">
         🔄 포트 리셋
       </button>
 
-      <button onclick="sendBootloaderCommand()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-2.5 py-1.5 rounded font-semibold transition" title="ESP32 펌웨어 업로드용 다운로드 모드 진입">
+      <button onclick="sendBootloaderCommand()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-2.5 py-1.5 rounded font-semibold transition">
         ⚡ 부트로더
       </button>
 
@@ -112,26 +101,20 @@
 
   <!-- 메인 레이아웃 본문 -->
   <main class="flex-1 p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-auto">
-
-    <!-- 좌측: 물리 스위치 배치도 (7컬럼) -->
+    <!-- 좌측 물리 스위치 배치도 -->
     <div class="lg:col-span-7 bg-[#2f3136] rounded-xl p-4 border border-gray-800 flex flex-col shadow-sm">
       <div class="flex items-center justify-between pb-3 border-b border-gray-700/60 mb-3">
         <h2 id="lblLayoutTitle" class="text-sm font-bold text-white flex items-center gap-2">
           <span>키패드 물리 배치도</span>
-          <span class="text-xs font-normal text-cyan-400">(스위치 방향 및 배선 자동 보정됨)</span>
+          <span class="text-xs font-normal text-cyan-400">(자동 감지된 기종 배선 적용됨)</span>
         </h2>
         <span class="text-xs text-gray-400">스위치 키를 클릭하여 매크로를 편집합니다.</span>
       </div>
-
-      <div id="switchBoardContainer" class="flex-1 flex items-center justify-center p-2 overflow-auto">
-        <!-- 동적 렌더링 -->
-      </div>
+      <div id="switchBoardContainer" class="flex-1 flex items-center justify-center p-2 overflow-auto"></div>
     </div>
 
-    <!-- 우측: 매크로 상세 에디터 (5컬럼) -->
+    <!-- 우측 매크로 에디터 -->
     <div class="lg:col-span-5 flex flex-col gap-3">
-
-      <!-- 동작 모드 및 키 속성 카드 -->
       <div class="bg-[#2f3136] rounded-xl p-4 border border-gray-800 shadow-sm flex flex-col gap-3">
         <div class="flex items-center justify-between border-b border-gray-700/60 pb-2">
           <div id="lblSelectedTarget" class="text-sm font-bold text-cyan-400">선택된 키: [ M1 / ID ? ]</div>
@@ -147,7 +130,6 @@
           </select>
         </div>
 
-        <!-- Tap / Hold 전환 라디오 -->
         <div id="holdTargetRow" class="hidden bg-[#202225] p-2 rounded flex items-center justify-around border border-amber-500/30">
           <label class="flex items-center gap-1.5 text-xs text-white cursor-pointer">
             <input type="radio" name="subTarget" value="tap" checked onchange="onSubTargetChanged()" class="accent-cyan-400">
@@ -165,7 +147,6 @@
         </div>
       </div>
 
-      <!-- 물리 키보드 시퀀스 레코더 카드 -->
       <div class="bg-[#2f3136] rounded-xl p-4 border border-gray-800 shadow-sm flex flex-col gap-2.5">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-gray-200">키보드 실시간 시퀀스 레코더</span>
@@ -178,7 +159,6 @@
 
         <input type="text" id="recCaptureBox" readonly value="[기록 시작] 클릭 후 실제 키보드를 직접 타이핑하세요" class="bg-[#202225] text-cyan-300 text-xs px-3 py-2 rounded border border-gray-700 outline-none text-center">
 
-        <!-- 매크로 이벤트 리스트 -->
         <div class="flex flex-col gap-1">
           <select id="macroEventList" size="7" class="w-full bg-[#202225] text-gray-200 text-xs rounded p-1.5 border border-gray-700 outline-none font-mono"></select>
           <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
@@ -193,7 +173,6 @@
           </div>
         </div>
 
-        <!-- 단축키 프리셋 카탈로그 -->
         <div class="bg-[#202225] p-2.5 rounded-lg border border-gray-700/70 flex flex-col gap-2 mt-1">
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -217,7 +196,6 @@
           </button>
         </div>
 
-        <!-- 하단 적용 버튼 -->
         <div class="flex items-center justify-between pt-2 border-t border-gray-700/50">
           <button onclick="removeAllDelays()" class="text-xs text-gray-300 hover:text-white bg-[#202225] border border-gray-700 px-3 py-1.5 rounded">
             딜레이 일괄 제거
@@ -226,18 +204,13 @@
             현재 키에 적용
           </button>
         </div>
-
       </div>
-
     </div>
   </main>
 
   <script>
-    // 전역 헬퍼 함수 정의
     function mk_single(k) { return [{t:"p", k:k}, {t:"r", k:k}]; }
-    function createSingleKey(k) { return mk_single(k); }
 
-    // 하드웨어 규격 맵
     const DEVICE_CONFIGS = {
       tuna_pad_10k_oled: {
         title: "tuna_pad_10k_oled (10키 OLED)",
@@ -450,7 +423,6 @@
       return data;
     }
 
-    // 시퀀스 문자열(P_a;R_a;D_100) 파서
     function parseSeqString(s) {
       if (!s) return [];
       const evs = [];
@@ -466,7 +438,6 @@
       return evs;
     }
 
-    // 시리얼 통신 엔진
     let serialPort = null;
     let serialReader = null;
     let readLoopActive = false;
@@ -496,17 +467,14 @@
       }
 
       if (!("serial" in navigator)) {
-        alert("현재 접속 환경에서는 브라우저가 시리얼 API를 지원하지 않습니다.\nPC용 Chrome 또는 Edge 브라우저에서 실행해 주세요.");
+        alert("현재 브라우저는 Web Serial API를 지원하지 않습니다. 크롬 또는 엣지를 사용해 주세요.");
         return;
       }
 
       try {
         let port = null;
-        try {
-          port = await navigator.serial.requestPort({ filters: [] });
-        } catch (e) {
-          port = await navigator.serial.requestPort();
-        }
+        try { port = await navigator.serial.requestPort({ filters: [] }); }
+        catch (e) { port = await navigator.serial.requestPort(); }
 
         if (!port) return;
 
@@ -515,7 +483,7 @@
 
         document.getElementById("btnConnect").innerHTML = "<span>❌</span><span>연결 해제</span>";
         document.getElementById("btnConnect").className = "bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-1.5 rounded font-bold transition shadow";
-        setStatus("직결 연결 성공 (115200)", "ok");
+        setStatus("직결 연결 성공 (기종 확인 중...)", "warn");
 
         startReadLoop();
 
@@ -525,10 +493,7 @@
 
       } catch (err) {
         if (err.name === "NotFoundError") {
-          setStatus("포트 선택이 취소되었습니다 (목록 장치 클릭 필요)", "warn");
-        } else if (err.name === "NetworkError" || err.message.includes("Failed to open")) {
-          setStatus("포트 점유 오류 (다른 프로그램 점유 중)", "err");
-          alert("포트 열기 실패!\n\n원인: 아두이노 IDE 시리얼 모니터나 파이썬 키맵퍼가 포트를 점유하고 있습니다.\n해결: 실행 중인 다른 시리얼 프로그램을 닫고 다시 시도해 주세요.");
+          setStatus("포트 선택이 취소되었습니다", "warn");
         } else {
           setStatus("포트 에러: " + err.message, "err");
         }
@@ -548,8 +513,8 @@
           serialPort = null;
         }
         setStatus("포트 잠금 해제됨", "ok");
-        document.getElementById("btnConnect").innerHTML = "<span>🔌</span><span>직렬 포트 연결 (팝업)</span>";
-        document.getElementById("btnConnect").className = "bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs px-3.5 py-1.5 rounded font-bold transition flex items-center gap-1.5 shadow";
+        document.getElementById("btnConnect").innerHTML = "<span>🔌</span><span>직렬 포트 연결 및 자동 인식</span>";
+        document.getElementById("btnConnect").className = "bg-[#5865f2] hover:bg-[#4752c4] text-white text-xs px-4 py-1.5 rounded font-bold transition flex items-center gap-1.5 shadow";
       } catch (err) {
         setStatus("리셋 실패: " + err.message, "err");
       }
@@ -595,21 +560,23 @@
     function handleIncomingLine(line) {
       if (!line) return;
 
-      // PING 식별 응답 자동 감지
+      // PING 자동 기종 식별
       for (const [devKey, devConf] of Object.entries(DEVICE_CONFIGS)) {
         if (devConf.ack_keys.some(ack => line.includes(ack))) {
           if (currentDevKey !== devKey) {
             currentDevKey = devKey;
-            document.getElementById("selDevice").value = devKey;
             renderDeviceLayout();
             switchMode(currentMode);
-            setStatus(`기종 자동 감지: ${devConf.title}`, "ok");
+            document.getElementById("badgeDevice").textContent = devConf.title;
+            setStatus(`기종 자동 인식 완료: ${devConf.title}`, "ok");
+            
+            // 기종 인식 직후 보드 데이터 자동 읽기 실행
+            setTimeout(() => { readFromBoard(); }, 150);
           }
           return;
         }
       }
 
-      // 보드 NVS 데이터 스트림 파싱 엔진
       if (line.startsWith("NAME:")) {
         const parts = line.split(":");
         if (parts.length >= 3) {
@@ -667,14 +634,6 @@
         setStatus("다운로드 모드 진입 성공", "ok");
         await resetSerialLock();
       }
-    }
-
-    // UI 엔진
-    function onDeviceChanged() {
-      currentDevKey = document.getElementById("selDevice").value;
-      renderDeviceLayout();
-      switchMode(1);
-      setStatus(`기종 변경: ${DEVICE_CONFIGS[currentDevKey].title}`, "ok");
     }
 
     function renderDeviceLayout() {
@@ -922,7 +881,6 @@
       refreshEditorView();
     }
 
-    // 키보드 레코더
     function startMacroRecord() {
       if (isCurrentKeyLocked()) return;
       isRecording = true;
@@ -1108,7 +1066,6 @@
       }, 1000);
     }
 
-    // 보드 NVS 입출력 제어
     async function writeToBoard() {
       if (!serialPort || !serialPort.writable) {
         alert("먼저 상단의 [직렬 포트 연결]을 완료해 주세요.");
@@ -1238,12 +1195,9 @@
     }
 
     // 전역 바인딩
-    window.mk_single = mk_single;
-    window.createSingleKey = createSingleKey;
     window.directOpenSerialPort = directOpenSerialPort;
     window.resetSerialLock = resetSerialLock;
     window.sendBootloaderCommand = sendBootloaderCommand;
-    window.onDeviceChanged = onDeviceChanged;
     window.switchMode = switchMode;
     window.onModeNameChanged = onModeNameChanged;
     window.onKeyTypeChanged = onKeyTypeChanged;
