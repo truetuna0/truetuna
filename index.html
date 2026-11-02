@@ -177,6 +177,9 @@
                 <option value="FN">기능키 (F1~F12)</option>
                 <option value="EDIT">편집 및 방향키</option>
                 <option value="NUMPAD">넘패드 (텐키)</option>
+                <option value="PUNCT">기본 기호 / 구두점</option>
+                <option value="SHIFT_SYM">Shift 결합 특수기호</option>
+                <option value="KOR_MOD">한국어 키 및 모디파이어</option>
               </select>
             </div>
             <div>
@@ -265,8 +268,9 @@
       }
     };
 
+    // 전체 프리셋 라이브러리 (HWP, PPT, 특수작업/유튜브 완전 복구)
     const PRESETS = {
-      // HWP 신규/수정 프리셋
+      // 1. HWP (한글 오피스)
       "문단번호리셋 (Ctrl+K,N Alt+G Alt+D)": {
         label: "번호리셋",
         seq: [
@@ -283,15 +287,13 @@
           {t:"r",k:"Delete"},{t:"r",k:"Shift"},{t:"r",k:"Ctrl"}
         ]
       },
-      "문단번호 (Ctrl+Shift+Insert)": {
+      "문단번호 삽입 (Ctrl+Shift+Insert)": {
         label: "문단번호",
         seq: [
           {t:"p",k:"Ctrl"},{t:"p",k:"Shift"},{t:"p",k:"Insert"},
           {t:"r",k:"Insert"},{t:"r",k:"Shift"},{t:"r",k:"Ctrl"}
         ]
       },
-
-      // 기본 HWP 프리셋
       "자간좁게 (Shift+Alt+N)": { label: "자간좁게", seq: [{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"n"},{t:"r",k:"n"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
       "자간넓게 (Shift+Alt+W)": { label: "자간넓게", seq: [{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"w"},{t:"r",k:"w"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
       "글씨작게 (Ctrl+A Shift+Alt+R)": { label: "글씨작게", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:30},{t:"p",k:"Shift"},{t:"p",k:"Alt"},{t:"p",k:"r"},{t:"r",k:"r"},{t:"r",k:"Alt"},{t:"r",k:"Shift"}] },
@@ -301,24 +303,92 @@
       "모양복사 (Alt+C Enter)": { label: "모양복사", seq: [{t:"p",k:"Alt"},{t:"p",k:"c"},{t:"r",k:"c"},{t:"r",k:"Alt"},{t:"d",ms:80},{t:"p",k:"Enter"},{t:"r",k:"Enter"}] },
       "모양붙이기 (Alt+C Esc)": { label: "모양붙이기", seq: [{t:"p",k:"Alt"},{t:"p",k:"c"},{t:"r",k:"c"},{t:"r",k:"Alt"},{t:"d",ms:50},{t:"p",k:"Esc"},{t:"r",k:"Esc"}] },
       "개요삽입 (Ctrl+Insert)": { label: "개요삽입", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"Insert"},{t:"r",k:"Insert"},{t:"r",k:"Ctrl"}] },
+      "문단번호리셋 (Ctrl+K,N Alt+G Enter)": { label: "번호리셋", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"k"},{t:"r",k:"k"},{t:"d",ms:30},{t:"p",k:"n"},{t:"r",k:"n"},{t:"r",k:"Ctrl"},{t:"d",ms:120},{t:"p",k:"Alt"},{t:"p",k:"g"},{t:"r",k:"g"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"Enter"},{t:"r",k:"Enter"}] },
       "번호다운 (Ctrl + KP +)": { label: "번호다운", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"KP +"},{t:"r",k:"KP +"},{t:"r",k:"Ctrl"}] },
       "번호업 (Ctrl + KP -)": { label: "번호업", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"KP -"},{t:"r",k:"KP -"},{t:"r",k:"Ctrl"}] },
-      "노랑강조 (Alt+H T C Enter Esc)": { label: "노랑강조", seq: [{t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},{t:"p",k:"t"},{t:"r",k:"t"},{t:"d",ms:40},{t:"p",k:"c"},{t:"r",k:"c"},{t:"d",ms:40},{t:"p",k:"Enter"},{t:"r",k:"Enter"},{t:"d",ms:30},{t:"p",k:"Esc"},{t:"r",k:"Esc"}] },
-      "빨강강조 (Alt+H FC Tab Tab Enter Esc)": { label: "빨강강조", seq: [{t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},{t:"p",k:"f"},{t:"r",k:"f"},{t:"d",ms:30},{t:"p",k:"c"},{t:"r",k:"c"},{t:"d",ms:40},{t:"p",k:"Tab"},{t:"r",k:"Tab"},{t:"d",ms:30},{t:"p",k:"Tab"},{t:"r",k:"Tab"},{t:"d",ms:30},{t:"p",k:"Enter"},{t:"r",k:"Enter"},{t:"d",ms:30},{t:"p",k:"Esc"},{t:"r",k:"Esc"}] },
-      "문단간격1.5 (Ctrl+A Alt+H K Down Enter)": { label: "문단1.5", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:40},{t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},{t:"p",k:"k"},{t:"r",k:"k"},{t:"d",ms:40},{t:"p",k:"Down"},{t:"r",k:"Down"},{t:"d",ms:30},{t:"p",k:"Enter"},{t:"r",k:"Enter"}] },
-      "유튜브 배속UP (Shift+.)": { label: "배속UP", seq: [{t:"p",k:"Shift"},{t:"p",k:"."},{t:"r",k:"."},{t:"r",k:"Shift"}] },
-      "유튜브 배속DOWN (Shift+,)": { label: "배속DOWN", seq: [{t:"p",k:"Shift"},{t:"p",k:","},{t:"r",k:","},{t:"r",k:"Shift"}] },
-      "저장 (Ctrl+S)": { label: "저장", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"s"},{t:"r",k:"s"},{t:"r",k:"Ctrl"}] },
+      "모두선택 (Ctrl+A)": { label: "모두선택", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"}] },
       "복사 (Ctrl+C Esc)": { label: "복사", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"c"},{t:"r",k:"c"},{t:"r",k:"Ctrl"},{t:"d",ms:20},{t:"p",k:"Esc"},{t:"r",k:"Esc"}] },
       "붙이기 (Ctrl+V)": { label: "붙이기", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"v"},{t:"r",k:"v"},{t:"r",k:"Ctrl"}] },
-      "스크린샷 (Win+Shift+S)": { label: "스크린샷", seq: [{t:"p",k:"Win"},{t:"p",k:"Shift"},{t:"p",k:"s"},{t:"r",k:"s"},{t:"r",k:"Shift"},{t:"r",k:"Win"}] }
+      "저장 (Ctrl+S)": { label: "저장", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"s"},{t:"r",k:"s"},{t:"r",k:"Ctrl"}] },
+      "취소 (Ctrl+Z)": { label: "취소", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"z"},{t:"r",k:"z"},{t:"r",k:"Ctrl"}] },
+      "스크린샷 (Win+Shift+S)": { label: "스크린샷", seq: [{t:"p",k:"Win"},{t:"p",k:"Shift"},{t:"p",k:"s"},{t:"r",k:"s"},{t:"r",k:"Shift"},{t:"r",k:"Win"}] },
+
+      // 2. PPT (파워포인트)
+      "노랑강조 (Alt+H T C Enter Esc)": {
+        label: "노랑강조",
+        seq: [
+          {t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},
+          {t:"p",k:"t"},{t:"r",k:"t"},{t:"d",ms:40},{t:"p",k:"c"},{t:"r",k:"c"},{t:"d",ms:40},
+          {t:"p",k:"Enter"},{t:"r",k:"Enter"},{t:"d",ms:30},{t:"p",k:"Esc"},{t:"r",k:"Esc"}
+        ]
+      },
+      "빨강강조 (Alt+H FC Tab Tab Enter Esc)": {
+        label: "빨강강조",
+        seq: [
+          {t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},
+          {t:"p",k:"f"},{t:"r",k:"f"},{t:"d",ms:30},{t:"p",k:"c"},{t:"r",k:"c"},{t:"d",ms:40},
+          {t:"p",k:"Tab"},{t:"r",k:"Tab"},{t:"d",ms:30},{t:"p",k:"Tab"},{t:"r",k:"Tab"},{t:"d",ms:30},
+          {t:"p",k:"Enter"},{t:"r",k:"Enter"},{t:"d",ms:30},{t:"p",k:"Esc"},{t:"r",k:"Esc"}
+        ]
+      },
+      "문단간격1.5 (Ctrl+A Alt+H K Down Enter)": {
+        label: "문단1.5",
+        seq: [
+          {t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:40},
+          {t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},
+          {t:"p",k:"k"},{t:"r",k:"k"},{t:"d",ms:40},{t:"p",k:"Down"},{t:"r",k:"Down"},{t:"d",ms:30},
+          {t:"p",k:"Enter"},{t:"r",k:"Enter"}
+        ]
+      },
+      "개요다운 (Home Tab)": { label: "개요다운", seq: [{t:"p",k:"Home"},{t:"r",k:"Home"},{t:"d",ms:30},{t:"p",k:"Tab"},{t:"r",k:"Tab"}] },
+      "개요업 (Home Shift+Tab)": { label: "개요업", seq: [{t:"p",k:"Home"},{t:"r",k:"Home"},{t:"d",ms:30},{t:"p",k:"Shift"},{t:"p",k:"Tab"},{t:"r",k:"Tab"},{t:"r",k:"Shift"}] },
+      "복제 (Ctrl+D)": { label: "복제", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"d"},{t:"r",k:"d"},{t:"r",k:"Ctrl"}] },
+      "글자작게 (Ctrl+A Ctrl+[)": { label: "글자작게", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:30},{t:"p",k:"Ctrl"},{t:"p",k:"["},{t:"r",k:"["},{t:"r",k:"Ctrl"}] },
+      "글자크게 (Ctrl+A Ctrl+])": { label: "글자크게", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:30},{t:"p",k:"Ctrl"},{t:"p",k:"]"},{t:"r",k:"]"},{t:"r",k:"Ctrl"}] },
+      "번호취소 (Alt+H U Home Enter)": {
+        label: "번호취소",
+        seq: [
+          {t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},
+          {t:"p",k:"u"},{t:"r",k:"u"},{t:"d",ms:40},{t:"p",k:"Home"},{t:"r",k:"Home"},{t:"d",ms:30},
+          {t:"p",k:"Enter"},{t:"r",k:"Enter"}
+        ]
+      },
+      "모양복사 (Ctrl+Shift+C)": { label: "모양복사", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"Shift"},{t:"p",k:"c"},{t:"r",k:"c"},{t:"r",k:"Shift"},{t:"r",k:"Ctrl"}] },
+      "모양붙이기 (Ctrl+A Ctrl+Shift+V)": { label: "모양붙이기", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"a"},{t:"r",k:"a"},{t:"r",k:"Ctrl"},{t:"d",ms:30},{t:"p",k:"Ctrl"},{t:"p",k:"Shift"},{t:"p",k:"v"},{t:"r",k:"v"},{t:"r",k:"Shift"},{t:"r",k:"Ctrl"}] },
+      "글머리기호 (Alt+H U Right Down Enter)": {
+        label: "글머리기호",
+        seq: [
+          {t:"p",k:"Alt"},{t:"r",k:"Alt"},{t:"d",ms:40},{t:"p",k:"h"},{t:"r",k:"h"},{t:"d",ms:40},
+          {t:"p",k:"u"},{t:"r",k:"u"},{t:"d",ms:40},{t:"p",k:"Right"},{t:"r",k:"Right"},{t:"d",ms:30},
+          {t:"p",k:"Down"},{t:"r",k:"Down"},{t:"d",ms:30},{t:"p",k:"Enter"},{t:"r",k:"Enter"}
+        ]
+      },
+      "새페이지 (Ctrl+M)": { label: "새페이지", seq: [{t:"p",k:"Ctrl"},{t:"p",k:"m"},{t:"r",k:"m"},{t:"r",k:"Ctrl"}] },
+
+      // 3. 특수작업 / 유튜브
+      "유튜브 배속UP (Shift+.)": { label: "배속UP", seq: [{t:"p",k:"Shift"},{t:"p",k:"."},{t:"r",k:"."},{t:"r",k:"Shift"}] },
+      "유튜브 배속DOWN (Shift+,)": { label: "배속DOWN", seq: [{t:"p",k:"Shift"},{t:"p",k:","},{t:"r",k:","},{t:"r",k:"Shift"}] },
+      "방정리": {
+        label: "방정리",
+        seq: [
+          {t:"p",k:"Ctrl"},{t:"p",k:"x"},{t:"r",k:"x"},{t:"r",k:"Ctrl"},
+          {t:"p",k:"."},{t:"r",k:"."},
+          {t:"p",k:"Ctrl"},{t:"p",k:"v"},{t:"r",k:"v"},{t:"r",k:"Ctrl"},
+          {t:"d",ms:100},
+          {t:"p",k:"Home"},{t:"r",k:"Home"},
+          {t:"p",k:"Down"},{t:"r",k:"Down"},
+          {t:"p",k:"Enter"},{t:"r",k:"Enter"},
+          {t:"p",k:"Down"},{t:"r",k:"Down"}
+        ]
+      }
     };
 
+    // 전체 카탈로그 분류
     const CATALOG = {
       "HWP": [
         "문단번호리셋 (Ctrl+K,N Alt+G Alt+D)",
         "글머리표 (Ctrl+Shift+Delete)",
-        "문단번호 (Ctrl+Shift+Insert)",
+        "문단번호 삽입 (Ctrl+Shift+Insert)",
         "자간좁게 (Shift+Alt+N)",
         "자간넓게 (Shift+Alt+W)",
         "글씨작게 (Ctrl+A Shift+Alt+R)",
@@ -328,20 +398,69 @@
         "모양복사 (Alt+C Enter)",
         "모양붙이기 (Alt+C Esc)",
         "개요삽입 (Ctrl+Insert)",
+        "문단번호리셋 (Ctrl+K,N Alt+G Enter)",
         "번호다운 (Ctrl + KP +)",
         "번호업 (Ctrl + KP -)",
-        "저장 (Ctrl+S)",
+        "모두선택 (Ctrl+A)",
         "복사 (Ctrl+C Esc)",
-        "붙이기 (Ctrl+V)"
+        "붙이기 (Ctrl+V)",
+        "저장 (Ctrl+S)",
+        "취소 (Ctrl+Z)",
+        "스크린샷 (Win+Shift+S)"
       ],
       "PPT": [
-        "노랑강조 (Alt+H T C Enter Esc)", "빨강강조 (Alt+H FC Tab Tab Enter Esc)",
-        "문단간격1.5 (Ctrl+A Alt+H K Down Enter)", "저장 (Ctrl+S)", "복사 (Ctrl+C Esc)", "붙이기 (Ctrl+V)"
+        "저장 (Ctrl+S)",
+        "취소 (Ctrl+Z)",
+        "노랑강조 (Alt+H T C Enter Esc)",
+        "빨강강조 (Alt+H FC Tab Tab Enter Esc)",
+        "문단간격1.5 (Ctrl+A Alt+H K Down Enter)",
+        "개요다운 (Home Tab)",
+        "복제 (Ctrl+D)",
+        "글자작게 (Ctrl+A Ctrl+[)",
+        "글자크게 (Ctrl+A Ctrl+])",
+        "개요업 (Home Shift+Tab)",
+        "모두선택 (Ctrl+A)",
+        "복사 (Ctrl+C Esc)",
+        "붙이기 (Ctrl+V)",
+        "모양복사 (Ctrl+Shift+C)",
+        "모양붙이기 (Ctrl+A Ctrl+Shift+V)",
+        "번호취소 (Alt+H U Home Enter)",
+        "글머리기호 (Alt+H U Right Down Enter)",
+        "새페이지 (Ctrl+M)"
       ],
-      "SPECIAL": ["유튜브 배속UP (Shift+.)", "유튜브 배속DOWN (Shift+,)", "스크린샷 (Win+Shift+S)"],
-      "FN": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"],
-      "EDIT": ["Up", "Down", "Left", "Right", "Enter", "Esc", "Space", "Tab", "Backspace", "Insert", "Delete", "Home", "End", "PageUp", "PageDown"],
-      "NUMPAD": ["KP 0", "KP 1", "KP 2", "KP 3", "KP 4", "KP 5", "KP 6", "KP 7", "KP 8", "KP 9", "KP +", "KP -", "KP *", "KP /", "KP Enter", "KP .", "NumLock"]
+      "SPECIAL": [
+        "유튜브 배속UP (Shift+.)",
+        "유튜브 배속DOWN (Shift+,)",
+        "방정리",
+        "스크린샷 (Win+Shift+S)"
+      ],
+      "FN": [
+        "F1", "F2", "F3", "F4", "F5", "F6",
+        "F7", "F8", "F9", "F10", "F11", "F12"
+      ],
+      "EDIT": [
+        "Up", "Down", "Left", "Right",
+        "Enter", "Esc", "Space", "Tab", "Backspace",
+        "Insert", "Delete", "Home", "End",
+        "PageUp", "PageDown", "PrtScn", "Pause",
+        "CapsLock", "ScrollLock"
+      ],
+      "NUMPAD": [
+        "KP 0", "KP 1", "KP 2", "KP 3", "KP 4",
+        "KP 5", "KP 6", "KP 7", "KP 8", "KP 9",
+        "KP +", "KP -", "KP *", "KP /", "KP Enter", "KP .", "NumLock"
+      ],
+      "PUNCT": [
+        ".", ",", "/", ";", "'", "[", "]", "\\", "-", "=", "`"
+      ],
+      "SHIFT_SYM": [
+        ">", "<", "?", ":", "\"", "{", "}", "|", "_", "+", "~",
+        "!", "@", "#", "$", "%", "^", "&", "*", "(", ")"
+      ],
+      "KOR_MOD": [
+        "한/영", "한자",
+        "Ctrl", "RCtrl", "Shift", "RShift", "Alt", "RAlt", "Win", "RWin"
+      ]
     };
 
     let currentDevKey = "tuna_20k_oled";
@@ -408,7 +527,7 @@
       const modes = { 1: km };
       for(let m=2; m<=4; m++) {
         modes[m] = {};
-        for(let i=0; i<15; i++) modes[m][i] = { type:"N", label:"미설정", macro:[], hold_label:"", hold_macro:[] };
+        for(let i=0; i<15; i++) modes[m][i] = { type:"N", label:"미설정", macro:[] };
       }
       return {
         mode_names: { 1:"모드1 (고정)", 2:"모드2 - 편집", 3:"모드3 - 사무", 4:"모드4 - 매크로" },
